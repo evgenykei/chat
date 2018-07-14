@@ -1,4 +1,4 @@
-const SMSruAPIKey = 'API-KEY';
+const SMSruAPIKey = '4DD5D7BE-1EDE-CB36-A534-8BC34DDD994B';
 
 var express = require('express'),
     http    = require('http'),
@@ -67,30 +67,6 @@ app.use(compression());
 app.use(serveStatic(__dirname + '/public'));
 app.use('/components', serveStatic(__dirname + '/node_modules/@bower_components'));
 
-//lets us get room memebers in socket.io >=1.0
-function findClientsSocketByRoomId (roomId, callback) {
-    // Old Way
-    // var room = io.sockets.adapter.rooms[roomId];
-    // if(room) {
-    //    for(var id in room) {
-    //       res.push(io.sockets.adapter.nsp.connected[id]);
-    //    }
-    // }
-    // return res;
-
-    var res = [];
-    io.of('/').in(roomId).clients(function (error, clients) {
-       if (error) { return callback(error); }
-       clients.forEach(function (client) {
-          // Gets the socket
-          //io.sockets.sockets[client];
-          res.push(client);
-       });
-       callback(undefined, res);
-    });
-
-}
-
 app.get('/', function (req, res) {
     res.render('index.html');
 });
@@ -101,41 +77,49 @@ server.listen(app.get('port'), app.get('ipaddr'), function () {
 
 
 //Button menu
-var buttonMenu = [
-    {
-        title: 'Button 1',
-        action: 'button1_action'
-    },
-    {
-        title: 'Button 2',
-        action: 'button2_action'
-    },
-    {
-        title: 'Button 3',
-        action: 'button3_action'
-    }
-];
-
 var buttonActions = {
+
+    root_action: function() {
+        return {
+            type: 'menu',
+            value: [
+                {
+                    title: 'Button 1',
+                    action: 'button1_action'
+                },
+                {
+                    title: 'Button 2',
+                    action: 'button2_action'
+                },
+                {
+                    title: 'Button 3',
+                    action: 'button3_action'
+                }
+            ]
+        }
+    },
+
     button1_action: async function() {
         return {
             type: 'text',
             value: await readAsync('./files/file1.txt', 'utf8')
         };
     },
+
     button2_action: async function() {
         return {
             type: 'text',
             value: await readAsync('./files/file2.txt', 'utf8')
         };
     },
+
     button3_action: function() {
         return {
             type: 'menu',
             value: [
                 {
                     title: 'Back',
-                    action: 'button3_back_action'
+                    action: 'root_action'
                 },
                 {
                     title: 'Button 3.1',
@@ -148,24 +132,21 @@ var buttonActions = {
             ]
         }
     },
-    button3_back_action: function() {
-        return {
-            type: 'menu',
-            value: buttonMenu
-        };
-    },
+
     button3_1_action: async function() {
         return {
             type: 'text',
             value: await readAsync('./files/file3_1.txt', 'utf8')
         };
     },
+
     button3_2_action: async function() {
         return {
             type: 'text',
             value: await readAsync('./files/file3_2.txt', 'utf8')
         };
     }
+
 }
 
 // Handles Socket Data Storage in Memory
@@ -200,6 +181,7 @@ io.sockets.on("connection", function (socket) {
     var lastImageSend = 0;
     var isRateLimited = 1;
     
+    //Verification request
     socket.on("verifyReq", async function(phone, type){
         phone = validatePhone.parseNumber(phone).phone;
         if (!phone) return socket.emit("verifyFail", "Invalid phone number. You should enter country code, e.g '+7..'");
@@ -247,109 +229,34 @@ io.sockets.on("connection", function (socket) {
         }
     });
 
-    //emits newuser
-    socket.on("joinReq", function (room, password, code) {
-        var roomID = room;
+    //Connection request
+    socket.on("joinReq", async function (code) {
 	    var phone = socket.get('phone');
-        var roomPassword = password;
-        var allowJoin = 1;
-        var denyReason = null;
         
         if (!phone) return socket.emit("joinFail", "Your phone number wasn't confirmed");
 	    if (code !== socket.get('code')) return socket.emit("joinFail", "Wrong confirmation code");
 
-        //get the client list and push it to the client
-        findClientsSocketByRoomId(roomID, function (error, clientsInRoom) {           
-            if (error) { throw error; }
+        //clear call refresh interval
+        var interval = socket.get('refreshCall');
+        if (interval) clearInterval(interval);
 
-            var clientsInRoomArray = [];
-            var clientsInRoomArrayScrubbed = [];
-            clientsInRoom.forEach(function (client) {
-                clientsInRoomArray.push(io.sockets.sockets[client].get('phone'));
-                /* the scrubbed one has the sanitized version as used in the username
-                 * classes for typing, so we can check and avoid collisions.
-                 */
-                clientsInRoomArrayScrubbed.push(io.sockets.sockets[client].get('phone').replace(/\W/g, ''));
-            });
+        //send button menu
+        socket.emit('buttonAction', await buttonActions['root_action']());
 
-            //check if the phone exists
-            if(clientsInRoomArrayScrubbed.indexOf(phone.replace(/\W/g, '')) != -1) {
-                denyReason = "User with this phone number is already in the room.";
-                allowJoin = 0;
-            }
-
-            if (allowJoin) {
-                //now in the room
-                socket.join(roomID);
-                socket.set('roomIn', roomID);
-
-                //send the join confirmation to the client, alert the room, and push a user list
-                socket.emit("joinConfirm");
-
-	     	    //clear call refresh interval
-	     	    var interval = socket.get('refreshCall');
-                if (interval) clearInterval(interval);
-
-                //send button menu
-                socket.emit('buttonMenu', buttonMenu);
-
-                //add them to the user list since they're now a member
-                clientsInRoomArray.push(phone);
-                io.sockets.in(roomID).emit("newUser", phone);
-                socket.emit("userList", clientsInRoomArray);
-            } 
-            else {
-                socket.emit("joinFail", denyReason);
-            }
-        });
+        socket.emit("joinConfirm");
     });
 
-    //execute button action
+    //Execute button action
     socket.on('buttonAction', async function(buttonAction) {
         var action = buttonActions[buttonAction];
         if (action) socket.emit('buttonAction', await action());
     });
 
-    //emits goneuser
+    //User disconnected
     socket.on('disconnect', function () {
-        io.sockets.in(socket.get('roomIn')).emit("goneUser", socket.get('phone'));
 	    var interval = socket.get('refreshCall');
         if (interval) clearInterval(interval);
         delete socket_data[socket.id];
     });
 
-    //emits chat
-    socket.on("textSend", function (msg) {
-        //0 = text
-        var type = 0;
-        var phone = socket.get('phone');
-        var data = [type, phone, msg];
-        io.sockets.in(socket.get('roomIn')).emit("chat", data);
-    });
-
-     //lets admins un-ratelimit themselves for data
-    socket.on("unRateLimit", function () {
-        isRateLimited = 0;
-    });
-
-    //emits data
-    socket.on("dataSend", function (msg) {
-        var currTime = Date.now();
-        if(((currTime - lastImageSend) < 5000) && isRateLimited) {
-            //it's been less than five seconds; no data for you!
-            socket.emit("rateLimit");
-        } else {
-            lastImageSend = currTime;
-            //1 = image
-            var type = 1;
-            var phone = socket.get('phone');
-            var data = [type, phone, msg];
-            io.sockets.in(socket.get('roomIn')).emit("chat", data);
-        }
-    });
-
-    //emits typing
-    socket.on("typing", function (typing) {
-        io.sockets.in(socket.get('roomIn')).emit("typing", [typing, socket.get('phone')]);
-    });
 });
