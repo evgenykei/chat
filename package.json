@@ -1,0 +1,43 @@
+{
+  "name": "freestep",
+  "version": "2.0.0",
+  "description": "open source node.js/socket.io chat app",
+  "main": "server.js",
+  "dependencies": {
+    "@bower_components/bootstrap": "twbs/bootstrap#3.3.7",
+    "@bower_components/crypto-js": "brix/crypto-js#3.1.9",
+    "@bower_components/font-awesome": "FortAwesome/Font-Awesome#4.7.0",
+    "@bower_components/jquery": "jquery/jquery-dist#3.2.1",
+    "@bower_components/typeahead.js": "twitter/typeahead.js#0.11.1",
+    "@bower_components/underscore": "jashkenas/underscore#1.8.3",
+    "body-parser": "1.18.2",
+    "compression": "1.7.1",
+    "express": "4.16.2",
+    "libphonenumber-js": "^1.2.19",
+    "method-override": "2.3.10",
+    "serve-static": "1.13.1",
+    "sms_ru": "0.0.1",
+    "socket.io": "2.0.4",
+    "superagent": "^3.8.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/@bower_components'), 'components', 'junction') } catch (e) { }\"",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jkingsman/FreeStep.git"
+  },
+  "author": "Jack Kingsman",
+  "url": "http://jacksbrain.com",
+  "email": "jack.kingsman@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jkingsman/FreeStep/issues"
+  },
+  "homepage": "https://github.com/jkingsman/FreeStep",
+  "engines": {
+    "yarn": ">= 1.0.0"
+  }
+}
