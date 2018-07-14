@@ -18,6 +18,7 @@
     "serve-static": "1.13.1",
     "sms_ru": "0.0.1",
     "socket.io": "2.0.4",
+    "socketio-file-upload": "^0.6.1",
     "superagent": "^3.8.3"
   },
   "devDependencies": {},

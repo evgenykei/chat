@@ -36,7 +36,15 @@ function sendVerificationCode(_phone, type) {
   socket.emit("verifyReq", _phone.toString(), type.toString());      
 }
 
+function postChat(message) {
+  $("#msgs").append(message);
+  $("#msgs").append("<div class=\"clearfix\"></div>");
+  $(window).scrollTop($(window).scrollTop() + 5000);
+}
+
 function createMenu(buttonMenu) {
+  $('#siofu_input').hide();
+
   var menu = $('#buttonMenu');
   menu.empty();
 
@@ -49,10 +57,8 @@ function createMenu(buttonMenu) {
   });
 }
 
-function postChat(message) {
-  $("#msgs").append(message);
-  $("#msgs").append("<div class=\"clearfix\"></div>");
-  $(window).scrollTop($(window).scrollTop() + 5000);
+function showUpload() {
+  $('#siofu_input').show();
 }
 
 //sanitize from non-alphanumberic characters
@@ -74,13 +80,11 @@ function sanitizeToHTMLSafe(string) {
 */
 //connection string
 var socket = io.connect("127.0.0.1:3000");
+var uploader = new SocketIOFileUpload(socket);
+uploader.listenOnInput(document.getElementById("siofu_input"));
 
-//config vars
-var configFile = playOnBackground = true;
-
-
-//max size for the base64'd image in bytes (default 1 megabyte)
-var maxUploadSize = 1000000;
+//max size for the uploading
+uploader.maxFileSize = 10485760;
 
 //set the name and byline of the app
 var appName = "FreeStep";
@@ -156,7 +160,6 @@ $(document).ready(function () {
   socket.on("joinConfirm", function () {
     //we've recieved request approval
     $("#connect-status").append("<li>Join request approved!</li>");
-    $("#connect-status").append("<li>Setting room title...</li>");
 
     //finally, expose the main room
     showChat();
@@ -165,6 +168,25 @@ $(document).ready(function () {
   //oops. They done goofed.
   socket.on("joinFail", function (failure) {
     $("#connect-status").append("<li><strong>Join request denied: " + failure + "</strong></li>");
+  });
+
+   /*
+   *
+   * Uploading operations
+   *
+   */
+
+  uploader.addEventListener("error", function(data){
+    if (data.code === 1)
+      postChat("This file is too big to upload");
+  });
+
+  socket.on("uploadFail", function (failure) {
+    postChat("Uploading failed: " + failure);
+  });
+
+  socket.on("uploadConfirm", function () {
+    postChat("File is successfully uploaded");
   });
 
 
@@ -179,6 +201,8 @@ $(document).ready(function () {
       postChat(action.value);
     else if (action.type === 'menu')
       createMenu(action.value);
+    else if (action.type === 'upload')
+      showUpload();
   });
 
   /*

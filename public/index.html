@@ -109,11 +109,12 @@
         </div>
     </div>
 
-    <div id="main-chat-screen">
+    <div class="container" id="main-chat-screen" style="display: none;">
         <div class="row">
-            <div class="main">
+            <div class="col-md-8 col-md-offset-2 text-center">
                 <h1><i class="glyphicon glyphicon-retweet"></i> <a href="/"><span class="app-title-box"></span></a></h1>
-                <div id="buttonMenu"></div>
+                <div id="buttonMenu"></div>                
+                <input class="form-control center" type="file" id="siofu_input" style="margin-top:10px; display: none;">
                 <div id="msgs"></div>
             </div>
         </div>
@@ -124,7 +125,8 @@
     <script src="components/underscore/underscore-min.js"></script>
     <script src="components/jquery/dist/jquery.min.js"></script>
     <script src="components/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>    
+    <script src="/siofu/client.js"></script>
     <script src="js/client.js"></script>
 </body>
 
