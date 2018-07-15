@@ -2,8 +2,20 @@ html, body {
   height: 100%;
 }
 
+body {
+  padding: 50px 0 0 0;
+}
+
 #main-chat-screen {
   padding-top: 10px;
+}
+
+#conversation {
+  font-size: 18px;
+  margin: 0px;
+  height: 100%;
+  overflow: auto;
+  padding-bottom: 40px;
 }
 
 #login-screen {
@@ -38,13 +50,14 @@ html, body {
   text-align: center;
 }
 
+.short-scroll {
+  height: 200px;
+  overflow: auto;
+}
+
 /*
  * General message classes
  */
-
-#msgs {
-  padding-top: 10px;
-}
 
 .message {
   display:inline-block;
@@ -72,3 +85,108 @@ html, body {
   font-size: 11px;
 }
 
+/*
+ * Per-person customization
+ */ 
+
+ .my-message,.my-message .message-metadata {
+  float:right;
+  padding: 0 5px 5px 5px
+}
+
+.their-message,.their-message .message-metadata {
+  float: left;
+  padding: 0 5px 5px 5px
+}
+
+.my-message .message-body {
+  background:#c7e2ff;
+}
+
+.their-message .message-body {
+  float:left;
+  background:#c8ffc8;
+}
+
+.menu .message-body {
+  float:left;
+  background:none;
+}
+
+.mentioned .message-body {
+  float:left;
+  background:#ffc8c8;
+}
+
+.my-message .message-metadata .messsage-name, .my-message .message-metadata .message-timestamp {
+  float: left;
+}
+
+.their-message .message-metadata .message-name, .their-message .message-metadata .message-timestamp {
+  float: right;
+}
+
+/*
+ *
+ * Anchor chat input to bottom
+ *
+ */ 
+ .chat-input {
+  position: fixed;
+  bottom: 0;
+  background-color: white;
+  margin-right: 10px;
+}
+
+/*
+ * 
+ * Sliding Nav Menu Handling
+ *
+ */
+
+.navmenu {
+  padding-top: 50px;
+}
+
+.padded {
+  padding: 10px;
+}
+
+.navbar {
+  display: block;
+  text-align: center;
+}
+.navbar-brand {
+  display: inline-block;
+  float: none;
+}
+.navbar-toggle {
+  position: absolute;
+  float: left;
+  margin-left: 15px;
+}
+
+.container {
+  max-width: 100%;
+}
+
+@media (min-width: 1px) {
+  .navbar-toggle {
+    display: block !important;
+  }
+}
+
+@media (min-width: 992px) {
+  body {
+    padding: 0 0 0 300px;
+  }
+  .navmenu {
+    padding-top: 0;
+  }
+  .navbar {
+    display: none !important; /* IE8 fix */
+  }
+  #login-screen {
+    margin-left: -300px;
+  }
+}

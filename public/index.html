@@ -49,7 +49,7 @@
    <meta name="msapplication-square310x310logo" content="largetile.png" />
 </head>
 
-<body>
+<body id="main-body">
 
     <div id="login-screen">
         <div class="row">
@@ -109,15 +109,61 @@
         </div>
     </div>
 
-    <div class="container" id="main-chat-screen" style="display: none;">
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2 text-center">
-                <h1><i class="glyphicon glyphicon-retweet"></i> <a href="/"><span class="app-title-box"></span></a></h1>
-                <div id="buttonMenu"></div>                
-                <input class="form-control center" type="file" id="siofu_input" style="margin-top:10px; display: none;">
-                <div id="msgs"></div>
+    <div id="main-chat-screen" style="display: none;">
+        <div class="navmenu navmenu-default navmenu-fixed-left offcanvas-sm padded">
+            <h1 class="visible-md visible-lg text-center" style="color: #777; "><i class="glyphicon glyphicon-retweet"></i> <a href="/"><span class="app-title-box"></span></a></h1>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title" id="room-title">Configuration</h3>
+                </div>
+                <div class="panel-body">
+                    <label>
+                        <input type="checkbox" id="config-timestamps" checked="checked"> Show timestamps
+                    </label>
+                    <label>
+                        <input type="checkbox" id="config-files" checked="checked"> Receive images
+                    </label>
+                    <label>
+                        <input type="radio" id="config-audio" name="config-audio" value="0"> Play new message alert on mention only
+                    </label>
+	                <label>
+                        <input type="radio" id="config-audio" name="config-audio" value="1" checked="checked"> Play new message alert on mention or unfocused window
+                    </label>
+                    <label id="config-imglink-container" class="hidden">
+                        <input type="checkbox" id="config-imglink"> Display image download links
+                    </label>
+                </div>
             </div>
+            <span id="file-drag-message">Drag and drop to send images.</span>
+            <input type="file" id="file-select" name="files" class="hidden" />
+            <br /><br /><p class="text-center"><em>Powered by <a href="https://github.com/jkingsman/FreeStep">FreeStep</a></em></p>
         </div>
+
+        <div class="navbar navbar-default navbar-fixed-top hidden-md hidden-lg">
+           <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navmenu">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+           </button>
+           <span class="navbar-brand">FreeStep</span>
+        </div>
+
+        <div id="conversation">
+            <div id="msgs"></div>
+        </div>
+        
+        <form id="chatForm" class="chat-input">
+           <div class="input-group" style="padding-left: 10px;">
+                <input type="text" class="form-control" id="msg" placeholder="Message">
+                <span class="input-group-btn">
+	                <input type="submit" class="btn btn-success" value="Submit">
+	            </span>
+                <span class="input-group-btn">
+                    <button id='showMenu' class="btn btn-primary">Menu</button>
+                </span>
+           </div>
+        </form>
+
     </div>
 
     <!--libraries-->

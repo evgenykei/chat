@@ -2,7 +2,7 @@ const SMSruAPIKey = '4DD5D7BE-1EDE-CB36-A534-8BC34DDD994B';
 
 var express = require('express'),
     http    = require('http'),
-    https   = require("https"),
+    https   = require('https'),
     fs      = require('fs');
 
 var methodOverride = require('method-override');
@@ -12,7 +12,8 @@ var bodyParser     = require('body-parser');
 var SMSru          = require('sms_ru');
 var validatePhone  = require('libphonenumber-js');
 var superagent     = require('superagent');
-var siofu          = require("socketio-file-upload");
+var siofu          = require('socketio-file-upload');
+var cryptojs       = require('crypto-js');
 
 var { promisify }  = require('util');
 var readAsync      = promisify(fs.readFile);
@@ -58,10 +59,10 @@ server = https.createServer(sslOptions, app);
    server = http.createServer(app);
 }
 
-var io = require("socket.io").listen(server);
+var io = require('socket.io').listen(server);
 
 app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);
-app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
+app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended : false }));
 app.use(methodOverride());
@@ -196,6 +197,7 @@ io.use(function (socket, next) {
         if (life) setTimeout(() => socket.clearInterval(key), life);
     };
     socket.clearInterval = function(key) {
+        if (!socket_intervals[socket.id]) return;
         let interval = socket_intervals[socket.id][key];
         if (interval) {
             clearInterval(interval);
@@ -211,15 +213,24 @@ io.use(function (socket, next) {
     next();
 });
 
-io.sockets.on("connection", function (socket) {
+io.sockets.on('connection', function (socket) {
+
+    //Socket functions
+    function sendChatData(data) {
+        if (data.type === 'menu') data.value = JSON.stringify(data.value);
+        if (!data.from) data.from = 'Server';
+
+        data.value = cryptojs.Rabbit.encrypt(data.value, socket.get('password')).toString();
+        socket.emit('chat', data);
+    }
 
     //Uploading config
     var uploader = new siofu();
-    uploader.dir = "./upload";
+    uploader.dir = './upload';
     uploader.maxFileSize = 10485760;
     uploader.listen(socket);
 
-    uploader.on("start", function(event) {
+    uploader.on('start', function(event) {
         /*
          * there could be some verification, for example
          */
@@ -230,19 +241,19 @@ io.sockets.on("connection", function (socket) {
         }*/
     });
 
-    uploader.on("saved", function(event) {
-        if (event.file.success === true) socket.emit('uploadConfirm');
+    uploader.on('saved', function(event) {
+        if (event.file.success === true) sendChatData({ type: 'text', value: 'File is successfully uploaded' });
     });
 
-    uploader.on("error", function(event) {
-        socket.emit('uploadFail', event.error.message);
+    uploader.on('error', function(event) {
+        sendChatData({ type: 'text', value: 'Upload failed: ' + event.error.message });
     });
 
     //Verification request
-    socket.on("verifyReq", async function(phone, type){
+    socket.on('verifyReq', async function(phone, type) {
         phone = validatePhone.parseNumber(phone).phone;
-        if (!phone) return socket.emit("verifyFail", "Invalid phone number. You should enter country code, e.g '+7..'");
-        if (type !== 'sms' && type !== 'call') return socket.emit("verifyFail", "Wrong verification type");
+        if (!phone) return socket.emit('verifyFail', 'Invalid phone number. You should enter country code, e.g \'+7..\'');
+        if (type !== 'sms' && type !== 'call') return socket.emit('verifyFail', 'Wrong verification type');
         
         var code = Math.floor(Math.random() * (9999 + 1)).toString();
         code = '0'.repeat(4 - code.length) + code;
@@ -251,14 +262,13 @@ io.sockets.on("connection", function (socket) {
         socket.set('code', code)
         
         if (type === 'sms') {
-	        var interval = socket.get('refreshCall');
-            if (interval) clearInterval(interval);
+	        socket.clearInterval('refresh_call');
 
             sms.sms_send({
                 to: phone,
                 text: 'FreeStep verification code: ' + code
             }, function(e){
-                socket.emit("verifyConfirm", "Verification sms was sent", phone, null);
+                socket.emit('verifyConfirm', 'Verification sms was sent', phone, null);
             });
         }
         else if (type === 'call'){
@@ -269,35 +279,45 @@ io.sockets.on("connection", function (socket) {
 
             socket.setInterval('refresh_call', async function() { 
                 if((await superagent.get('https://sms.ru/callcheck/status').query({ api_id: SMSruAPIKey, check_id: res.check_id, json: 1 })).body.check_status === 401) {
-                    socket.emit("verifyConfirm", "Your phone number was verified. You can join now", phone, code);
+                    socket.emit('verifyConfirm', 'Your phone number was verified. You can join now', phone, code);
                     socket.clearInterval('refresh_call');
                 }
 	     	}, 10000, 300000)
-              
-            socket.emit("verifyConfirm", "Call " + res.call_phone_pretty + " to verify", phone, null); 
+            
+            socket.emit('verifyConfirm', 'Call ' + res.call_phone_pretty + ' to verify', phone, null); 
         }
         else {
-            socket.emit("verifyFail", "Wrong verification type"); 
+            socket.emit('verifyFail', 'Wrong verification type'); 
         }
     });
 
     //Connection request
-    socket.on("joinReq", async function (code) {
+    socket.on('joinReq', async function (code) {
 	    var phone = socket.get('phone');
         
-        if (!phone) return socket.emit("joinFail", "Your phone number wasn't confirmed");
-	    if (code !== socket.get('code')) return socket.emit("joinFail", "Wrong confirmation code");
+        if (!phone) return socket.emit('joinFail', 'Your phone number wasn\'t confirmed');
+	    if (code !== socket.get('code')) return socket.emit('joinFail', 'Wrong confirmation code');
 
-        //send button menu
-        socket.emit('buttonAction', await buttonActions['root_action']());
+        //set socket password
+        socket.set('password', cryptojs.SHA1(phone + '.' + code).toString());
 
-        socket.emit("joinConfirm");
+        socket.emit('joinConfirm');
+    });
+
+    //Emits chat
+    socket.on('textSend', function (msg) {
+        socket.emit('chat', { type: 'text', value: msg, from: socket.get('phone') });
+    });
+
+    //Emits typing
+    socket.on('typing', function (isTyping) {
+        socket.emit('typing', { isTyping: isTyping, from: socket.get('phone') });
     });
 
     //Execute button action
     socket.on('buttonAction', async function(buttonAction) {
-        var action = buttonActions[buttonAction];
-        if (action) socket.emit('buttonAction', await action(socket));
+        let result = await buttonActions[buttonAction](socket);
+        if (result) sendChatData(result);
     });
 
     //User disconnected

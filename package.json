@@ -12,6 +12,7 @@
     "@bower_components/underscore": "jashkenas/underscore#1.8.3",
     "body-parser": "1.18.2",
     "compression": "1.7.1",
+    "crypto-js": "^3.1.9-1",
     "express": "4.16.2",
     "libphonenumber-js": "^1.2.19",
     "method-override": "2.3.10",
@@ -21,7 +22,9 @@
     "socketio-file-upload": "^0.6.1",
     "superagent": "^3.8.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "artillery": "^1.6.0-22"
+  },
   "scripts": {
     "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/@bower_components'), 'components', 'junction') } catch (e) { }\"",
     "start": "node server.js"
