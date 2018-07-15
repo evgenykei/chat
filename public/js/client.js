@@ -10,6 +10,11 @@ function showChat() {
   $("#main-chat-screen").show();
 }
 
+function showLogin() {  
+  $("#main-chat-screen").hide();
+  $("#login-screen").show();
+}
+
 function sendJoinReq(tryCode){
   if (tryCode === "" || tryCode.length < 4) {
     $("#connect-status").append("<li>Please verify your phone number</li>");
@@ -39,14 +44,8 @@ function sendVerificationCode(_phone, type) {
 
 //attempt to decrypt the given data with the given password, or return a failure string
 function decryptOrFail(data, password) {
-  try {
     var encoded = CryptoJS.Rabbit.decrypt(data, password);
-    var decrypted = encoded.toString(CryptoJS.enc.Utf8);
-  } 
-  catch (err) {
-    var decrypted = "Unable to decrypt: " + data;
-  }
-  return decrypted;
+    return encoded.toString(CryptoJS.enc.Utf8);
 }
 
 function getHTMLStamp() {
@@ -116,11 +115,24 @@ function typingTimeout() {
  *
 */
 
+//vars for messaging
+var password = phone = code = null;
+
 //connection string
 var socket = io.connect("127.0.0.1:3000");
 
-//vars for messaging
-var password = phone = code = null;
+//try to restore session
+let session = localStorage.getItem('session');
+try {
+  session = CryptoJS.enc.Base64.parse(session).toString(CryptoJS.enc.Utf8).split('.');
+  phone = session[0];
+  code = session[1];
+  socket.emit('restoreSession', phone, code);
+}
+catch(error) {
+  showLogin();
+  localStorage.removeItem('session');
+}
 
 //uploader config
 var uploader = new SocketIOFileUpload(socket);
@@ -220,6 +232,12 @@ $(document).ready(function () {
     sendJoinReq($("#code").val());
   });
 
+  //Logout button hook
+  $("#logout" ).click(function() {
+    localStorage.removeItem('session');
+	  location.reload();
+  });
+
   //menu buttons hooks
   $("#showMenu" ).click(function() {
 	  socket.emit('buttonAction', 'root_action');
@@ -270,6 +288,10 @@ $(document).ready(function () {
 
     //finally, expose the main room
     password = CryptoJS.SHA1(phone + "." + code).toString();
+
+    //save session
+    localStorage.setItem('session', CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(phone + "." + code)));
+
     showChat();
   });
 
@@ -317,7 +339,14 @@ $(document).ready(function () {
 
   //get a chat message
   socket.on("chat", function (payload) {
-    var msg = decryptOrFail(payload.value, password);
+    var msg;
+    try {
+      msg = decryptOrFail(payload.value, password);
+    }
+    catch (err) {
+      payload.type = 'text';
+      msg = "Unable to decrypt: " + payload.value;
+    }
 
     //msg core is used later in message construction
     var msgCore, msgOwner = null;
@@ -354,7 +383,7 @@ $(document).ready(function () {
     }
 
     //post the message
-    if (phone == payload.from) msgOwner = "my-message";
+    if (phone === payload.from) msgOwner = "my-message";
     else {
       msgOwner = "their-message";
       if (payload.type === 'menu') msgOwner += " menu";
@@ -373,6 +402,11 @@ $(document).ready(function () {
 
   socket.on("rateLimit", function (msg) {
     postChat("<div class=\"status-message text-warning\">Please wait before doing that again.</div>");
+  });
+
+  socket.on('wrongSession', function() {
+    localStorage.removeItem('session');
+    showLogin();
   });
 
   /*

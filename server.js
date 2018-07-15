@@ -1,4 +1,5 @@
 const SMSruAPIKey = '4DD5D7BE-1EDE-CB36-A534-8BC34DDD994B';
+const sessionLifetimeSeconds = 30;
 
 var express = require('express'),
     http    = require('http'),
@@ -181,21 +182,26 @@ var buttonActions = {
 // };
 var socket_data = {};
 var socket_intervals = {};
+var socket_sessions = {};
 io.use(function (socket, next) {
-    // Initialize
+
     socket_data[socket.id] = {};
     socket_intervals[socket.id] = {};
+
     socket.get = function (key) {
        return socket_data[socket.id][key];
     };
+
     socket.set = function (key, value) {
        socket_data[socket.id][key] = value;
     };
+
     socket.setInterval = function (key, func, interval, life) {
         socket.clearInterval(key);
         socket_intervals[socket.id][key] = setInterval(func, interval);
         if (life) setTimeout(() => socket.clearInterval(key), life);
     };
+
     socket.clearInterval = function(key) {
         if (!socket_intervals[socket.id]) return;
         let interval = socket_intervals[socket.id][key];
@@ -204,12 +210,24 @@ io.use(function (socket, next) {
             delete socket_intervals[socket.id][key];
         }
     };
+
     socket.destroy = function() {
         for (let interval in socket_intervals[socket.id])
             socket.clearInterval(interval);
         delete socket_intervals[socket.id];
         delete socket_data[socket.id];
     }
+
+    socket.auth = function(phone, code) {
+        socket.set('phone', phone);
+        socket.set('code', code);
+        socket.set('password', cryptojs.SHA1(phone + '.' + code).toString());
+    };
+
+    socket.isAuth = function() {
+        return socket.get('password') !== undefined;
+    }
+
     next();
 });
 
@@ -231,6 +249,7 @@ io.sockets.on('connection', function (socket) {
     uploader.listen(socket);
 
     uploader.on('start', function(event) {
+        if (!socket.isAuth()) return uploader.abort(event.file.id, socket);
         /*
          * there could be some verification, for example
          */
@@ -251,6 +270,8 @@ io.sockets.on('connection', function (socket) {
 
     //Verification request
     socket.on('verifyReq', async function(phone, type) {
+        if (socket.isAuth()) return;
+
         phone = validatePhone.parseNumber(phone).phone;
         if (!phone) return socket.emit('verifyFail', 'Invalid phone number. You should enter country code, e.g \'+7..\'');
         if (type !== 'sms' && type !== 'call') return socket.emit('verifyFail', 'Wrong verification type');
@@ -293,36 +314,61 @@ io.sockets.on('connection', function (socket) {
 
     //Connection request
     socket.on('joinReq', async function (code) {
+        if (socket.isAuth()) return;
+
 	    var phone = socket.get('phone');
         
         if (!phone) return socket.emit('joinFail', 'Your phone number wasn\'t confirmed');
 	    if (code !== socket.get('code')) return socket.emit('joinFail', 'Wrong confirmation code');
 
         //set socket password
-        socket.set('password', cryptojs.SHA1(phone + '.' + code).toString());
+        socket.auth(phone, code);
 
         socket.emit('joinConfirm');
     });
 
     //Emits chat
     socket.on('textSend', function (msg) {
+        if (!socket.isAuth()) return;
+
         socket.emit('chat', { type: 'text', value: msg, from: socket.get('phone') });
     });
 
     //Emits typing
     socket.on('typing', function (isTyping) {
+        if (!socket.isAuth()) return;
+
         socket.emit('typing', { isTyping: isTyping, from: socket.get('phone') });
     });
 
     //Execute button action
     socket.on('buttonAction', async function(buttonAction) {
+        if (!socket.isAuth()) return;
+
         let result = await buttonActions[buttonAction](socket);
         if (result) sendChatData(result);
     });
 
+    //Restore session
+    socket.on('restoreSession', function(phone, code) {
+        if (!socket_sessions[phone] || socket_sessions[phone] !== code) return socket.emit('wrongSession');
+
+        socket.auth(phone, code);
+        socket.emit('joinConfirm');
+    })
+
     //User disconnected
     socket.on('disconnect', function () {
-	    socket.destroy();
+        //set session
+        let phone = socket.get('phone');
+        if (phone) {
+            socket_sessions[phone] = socket.get('code');
+            setTimeout(function() {
+                delete socket_sessions[phone];
+            }, sessionLifetimeSeconds * 1000);
+        }
+
+        socket.destroy();
     });
 
 });
