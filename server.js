@@ -157,9 +157,11 @@ var buttonActions = {
     },
 
     button3_3_action: async function(socket) {
+        let secondsToUpload = 60;
+        socket.set('uploadTill', Math.floor(Date.now() / 1000) + secondsToUpload);
         return {
             type: 'upload',
-            value: null
+            value: secondsToUpload
         };
     }
 
@@ -226,21 +228,20 @@ io.use(function (socket, next) {
 
     socket.isAuth = function() {
         return socket.get('password') !== undefined;
-    }
+    };
+
+    socket.sendChatData = function(data) {
+        if (data.type === 'menu') data.value = JSON.stringify(data.value);
+        if (!data.from) data.from = 'Server';
+
+        data.value = cryptojs.Rabbit.encrypt(data.value.toString(), socket.get('password')).toString();
+        socket.emit('chat', data);
+    };
 
     next();
 });
 
 io.sockets.on('connection', function (socket) {
-
-    //Socket functions
-    function sendChatData(data) {
-        if (data.type === 'menu') data.value = JSON.stringify(data.value);
-        if (!data.from) data.from = 'Server';
-
-        data.value = cryptojs.Rabbit.encrypt(data.value, socket.get('password')).toString();
-        socket.emit('chat', data);
-    }
 
     //Uploading config
     var uploader = new siofu();
@@ -250,6 +251,11 @@ io.sockets.on('connection', function (socket) {
 
     uploader.on('start', function(event) {
         if (!socket.isAuth()) return uploader.abort(event.file.id, socket);
+        if (!socket.get('uploadTill') || Math.floor(Date.now() / 1000) >= socket.get('uploadTill')) {
+            socket.sendChatData({ type: 'text', value: 'Uploading is not allowed now' });
+            return uploader.abort(event.file.id, socket);
+        }
+        
         /*
          * there could be some verification, for example
          */
@@ -261,11 +267,11 @@ io.sockets.on('connection', function (socket) {
     });
 
     uploader.on('saved', function(event) {
-        if (event.file.success === true) sendChatData({ type: 'text', value: 'File is successfully uploaded' });
+        if (event.file.success === true) socket.sendChatData({ type: 'text', value: 'File is successfully uploaded' });
     });
 
     uploader.on('error', function(event) {
-        sendChatData({ type: 'text', value: 'Upload failed: ' + event.error.message });
+        socket.sendChatData({ type: 'text', value: 'Uploading failed: ' + event.error.message });
     });
 
     //Verification request
@@ -346,7 +352,7 @@ io.sockets.on('connection', function (socket) {
         if (!socket.isAuth()) return;
 
         let result = await buttonActions[buttonAction](socket);
-        if (result) sendChatData(result);
+        if (result) socket.sendChatData(result);
     });
 
     //Restore session

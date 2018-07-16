@@ -49,8 +49,13 @@ function decryptOrFail(data, password) {
 }
 
 function getHTMLStamp() {
-  var date = new Date();
-  var stamp = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+  let date = new Date();
+  let stamp = [
+    date.getHours().toString(),
+    date.getMinutes().toString(), 
+    date.getSeconds().toString()
+  ].map((part) => part.length == 1 ? '0' + part : part).join(':');
+
   return "<span class=\"message-timestamp\">" + stamp + " </span>";
 }
 
@@ -379,7 +384,7 @@ $(document).ready(function () {
       });
     }
     else if (payload.type === 'upload') {
-      msgCore = 'Server requests file to upload.';
+      msgCore = 'Server requests file(s) to upload. You have ' + msg + ' seconds.';
     }
 
     //post the message
