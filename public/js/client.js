@@ -17,10 +17,10 @@ function showLogin() {
 
 function sendJoinReq(tryCode){
   if (tryCode === "" || tryCode.length < 4) {
-    $("#connect-status").append("<li>Please verify your phone number</li>");
+    postConnectStatus("<li>Please verify your phone number</li>");
   } 
   else {
-    $("#connect-status").append("<li>Sending join request</li>");
+    postConnectStatus("<li>Sending join request</li>");
     code = tryCode;
     socket.emit("joinReq", tryCode.toString());
   }
@@ -28,17 +28,11 @@ function sendJoinReq(tryCode){
 
 function sendVerificationCode(_phone, type) {
   if (!_phone.match(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im)){
-    $("#connect-status").append("<li>Please enter a valid mobile phone number.</li>");
+    postConnectStatus("<li>Please enter a valid mobile phone number.</li>");
 	  return;
   }
-   
-  if (type === 'sms') {
-	  $("#codeDiv").val('');
-	  $("#codeDiv").removeClass('hidden');
-  }
-  else if (type === 'call') $("#codeDiv").addClass('hidden');
 	
-  $("#connect-status").append("<li>Sending verification request</li>");
+  postConnectStatus("<li>Sending verification request</li>");
   socket.emit("verifyReq", _phone.toString(), type.toString());      
 }
 
@@ -68,6 +62,14 @@ function postChat(message, mentionStatus) {
   if ((playOnBackground && !document.hasFocus()) || mentionStatus) {
     notify.play();
   }  
+}
+
+function postConnectStatus(html) {
+  if ($("#connect-status").children().length === 5) { 
+    let slice = $("#connect-status").children().slice(1);
+    $("#connect-status").html(slice);
+  }
+  $("#connect-status").append(html);
 }
 
 //query the url for the given parameter; used in case of a link to the room
@@ -101,10 +103,10 @@ function notificationCheck() {
   }
 
   if (missedNotifications > 0) {
-    document.title = "(" + missedNotifications + " new) FreeStep";
+    document.title = "(" + missedNotifications + " new) SAPbot";
   } 
   else {
-    document.title = "FreeStep";
+    document.title = "SAPbot";
   }
 }
 
@@ -154,8 +156,7 @@ var messageCount = 0;
 var customMode = 0;
 
 //set the name and byline of the app
-var appName = "FreeStep";
-var appByline = "Open source, private chat goodness.<br />Built with node.js/socket.io/Bootstrap.";
+var appName = "SAPbot";
 
 /*
  *
@@ -205,14 +206,17 @@ $(document).ready(function () {
     event.preventDefault();
   });
 
+  $("button").on('click', function(e){
+    e.preventDefault();
+    //ajax code here
+});
+
   //prep for login display - set paragraphs and titles
   if (customMode){
     $("#paragraph-block").hide();
   }
 
   $(".app-title-box").html(appName);
-
-  $(".app-byline-box").html(appByline);
 
   //curtains up! hide the main screen and focus on the name box when appropriate
   $("#main-chat-screen").hide();
@@ -232,8 +236,8 @@ $(document).ready(function () {
 	  sendVerificationCode($("#phone").val(), 'call');
   });
 
-  //form submit hook - they want to join
-  $("#nameForm").submit(function () {
+  //join hook
+  $("#join").click(function () {
     sendJoinReq($("#code").val());
   });
 
@@ -258,19 +262,27 @@ $(document).ready(function () {
    *
    */
 
-  socket.on("verifyConfirm", function(message, _phone, code) {
-    $("#connect-status").append("<li><strong>" + message + "</strong></li>");
+  socket.on("verifyConfirm", function(message, type, _phone, code) {
+    if (type === 'sms') {
+      $("#code").val('');
+      $("#code").show();
+    }
+    else if (type === 'call') $("#code").hide();
+  
+    $("#join").show();
+
+    postConnectStatus("<li><strong>" + message + "</strong></li>");
     phone = _phone;
 	  $("#code").val(code);
   });
    
   socket.on("verifyFail", function(failure) {
-	  $("#connect-status").append("<li><strong>Verification request denied: " + failure + "</strong></li>");
+	  postConnectStatus("<li><strong>Verification request denied: " + failure + "</strong></li>");
   });
    
   socket.on("joinConfirm", function () {
     //we've recieved request approval
-    $("#connect-status").append("<li>Join request approved!</li>");
+    postConnectStatus("<li>Join request approved!</li>");
 
     /* Focus the message box, unless you're mobile, it which case blur
     * everything that might have focus so your keyboard collapses and
@@ -302,7 +314,7 @@ $(document).ready(function () {
 
   //oops. They done goofed.
   socket.on("joinFail", function (failure) {
-    $("#connect-status").append("<li><strong>Join request denied: " + failure + "</strong></li>");
+    postConnectStatus("<li><strong>Join request denied: " + failure + "</strong></li>");
   });
 
   /*

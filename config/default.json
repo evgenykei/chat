@@ -15,7 +15,7 @@
         "sessionLife": 30,
         "callConfirmationCheckInterval": 10,
         "callConfirmationTimeout": 300,
-        "verificationBreakInterval": 30,
+        "verificationDelay": 30,
         "timeForUploading": 60
     }
 }

@@ -2,24 +2,20 @@ html, body {
   height: 100%;
 }
 
-body {
-  padding: 50px 0 0 0;
-}
-
 #main-chat-screen {
   padding-top: 10px;
 }
 
+#header-panel {  
+  background-color: white;
+  padding-bottom: 20px;
+}
+
 #conversation {
   font-size: 18px;
-  margin: 0px;
   height: 100%;
   overflow: auto;
   padding-bottom: 40px;
-}
-
-#login-screen {
-  margin: 10px;
 }
 
 #msgs {
@@ -29,6 +25,81 @@ body {
 #chatForm {
   /* Freaking firefox... */
   width: -moz-available;
+}
+
+/*
+ *
+ * Sign in style
+ *
+ */
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+
+.form-signin .form-signin-heading, .form-signin .checkbox {
+  margin-bottom: 10px;
+}
+
+.form-signin .form-control {
+ position: relative;
+ font-size: 16px;
+ height: auto;
+ padding: 10px;
+ -webkit-box-sizing: border-box;
+ -moz-box-sizing: border-box;
+ box-sizing: border-box;
+}
+
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+
+.form-signin input {
+  margin-bottom: 10px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#verifyCall  {
+  margin-bottom: 10px;
+}
+
+.account-wall {
+  margin-top: 20px;
+  padding: 40px 0px 20px 0px;
+  background-color: #f7f7f7;
+  -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+}
+
+.login-title {
+  margin-top: 60px;
+  color: #555;
+  font-size: 18px;
+  font-weight: 400;
+  display: block;
+}
+
+.profile-img {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 10px;
+  display: block;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  border-radius: 50%;
+}
+
+#code {
+  margin-top: 30px;
+}
+
+#connect-status {
+  margin: 30px;
 }
 
 /*
@@ -53,6 +124,18 @@ body {
 .short-scroll {
   height: 200px;
   overflow: auto;
+}
+
+.chat-input {
+  background-color: white;
+}
+
+#file-select {
+  margin-top: 10px;
+}
+
+#file-drag-message {
+  margin-top: 10px;
 }
 
 /*
@@ -124,69 +207,4 @@ body {
 
 .their-message .message-metadata .message-name, .their-message .message-metadata .message-timestamp {
   float: right;
-}
-
-/*
- *
- * Anchor chat input to bottom
- *
- */ 
- .chat-input {
-  position: fixed;
-  bottom: 0;
-  background-color: white;
-  margin-right: 10px;
-}
-
-/*
- * 
- * Sliding Nav Menu Handling
- *
- */
-
-.navmenu {
-  padding-top: 50px;
-}
-
-.padded {
-  padding: 10px;
-}
-
-.navbar {
-  display: block;
-  text-align: center;
-}
-.navbar-brand {
-  display: inline-block;
-  float: none;
-}
-.navbar-toggle {
-  position: absolute;
-  float: left;
-  margin-left: 15px;
-}
-
-.container {
-  max-width: 100%;
-}
-
-@media (min-width: 1px) {
-  .navbar-toggle {
-    display: block !important;
-  }
-}
-
-@media (min-width: 992px) {
-  body {
-    padding: 0 0 0 300px;
-  }
-  .navmenu {
-    padding-top: 0;
-  }
-  .navbar {
-    display: none !important; /* IE8 fix */
-  }
-  #login-screen {
-    margin-left: -300px;
-  }
 }

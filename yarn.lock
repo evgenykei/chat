@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@bower_components/bootstrap@twbs/bootstrap#3.3.7":
-  version "3.3.7"
-  resolved "https://codeload.github.com/twbs/bootstrap/tar.gz/0b9c4a4007c44201dce9a6cc1a38407005c26c86"
+"@bower_components/bootstrap@twbs/bootstrap#4.1.2":
+  version "4.1.2"
+  resolved "https://codeload.github.com/twbs/bootstrap/tar.gz/1f46337a89ed21c94a7c37bc0c0e14a71fef7d97"
 
 "@bower_components/crypto-js@brix/crypto-js#3.1.9":
   version "3.1.9"

@@ -80,7 +80,7 @@ module.exports = {
     },
 
     button3_3_action: async function(socket) {
-        socket.set('uploadTill', Math.floor(Date.now() / 1000) + timeForUploading);
+        socket.setTimeout('uploadTill', timeForUploading);
         return {
             type: 'upload',
             value: timeForUploading

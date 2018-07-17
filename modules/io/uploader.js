@@ -8,7 +8,7 @@ function initialize(socket) {
 
     uploader.on('start', function(event) {
         if (!socket.isAuth()) return uploader.abort(event.file.id, socket);
-        if (!socket.get('uploadTill') || Math.floor(Date.now() / 1000) >= socket.get('uploadTill')) {
+        if (socket.checkTimeout('uploadTill') === false) {
             socket.sendChatData({ type: 'text', value: 'Uploading is not allowed now' });
             return uploader.abort(event.file.id, socket);
         }

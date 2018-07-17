@@ -5,12 +5,14 @@ const sessionLife = config.get('Timers.sessionLife');
 
 var socket_data = {};
 var socket_intervals = {};
+var socket_timeouts = {};
 var socket_sessions = {};
 
 module.exports = function (socket, next) {
 
     socket_data[socket.id] = {};
     socket_intervals[socket.id] = {};
+    socket_timeouts[socket.id] = {};
 
     socket.get = function (key) {
        return socket_data[socket.id][key];
@@ -20,7 +22,7 @@ module.exports = function (socket, next) {
        socket_data[socket.id][key] = value;
     };
 
-    socket.setInterval = function (key, func, interval, life) {
+    socket.setInterval = function(key, func, interval, life) {
         socket.clearInterval(key);
         socket_intervals[socket.id][key] = setInterval(func, interval);
         if (life) setTimeout(() => socket.clearInterval(key), life);
@@ -35,12 +37,29 @@ module.exports = function (socket, next) {
         }
     };
 
+    socket.setTimeout = function(key, time) {
+        socket_timeouts[socket.id][key] = Math.floor(Date.now() / 1000) + time;
+    };
+
+    socket.checkTimeout = function(key) {
+        if (!socket_timeouts[socket.id][key]) return false;
+        return Math.floor(Date.now() / 1000) < socket_timeouts[socket.id][key];
+    };
+
+    socket.timeoutLeft = function(key) {
+        if (socket.checkTimeout(key) === false) return 0;
+        return socket_timeouts[socket.id][key] - Math.floor(Date.now() / 1000);
+    };
+
     socket.destroy = function() {
         for (let interval in socket_intervals[socket.id])
             socket.clearInterval(interval);
-        delete socket_intervals[socket.id];
+
+            
         delete socket_data[socket.id];
-    }
+        delete socket_intervals[socket.id];
+        delete socket_timeouts[socket.id];
+    };
 
     socket.auth = function(phone, code) {
         socket.set('phone', phone);
@@ -75,7 +94,7 @@ module.exports = function (socket, next) {
 
         socket.auth(phone, code);
         socket.emit('joinConfirm');
-    }
+    };
 
     next();
 }
