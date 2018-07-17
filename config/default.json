@@ -1,0 +1,21 @@
+{
+    "Express": {
+        "host": "https://SAPbot.ru",
+        "port": 3000
+    },
+
+    "SMSAuth": {
+        "apiKey": "4DD5D7BE-1EDE-CB36-A534-8BC34DDD994B",
+        "smsText": "SAPbot verification code: %s"
+    },
+
+    "Timers": {
+        "___comment": "All timers are set in seconds",
+
+        "sessionLife": 30,
+        "callConfirmationCheckInterval": 10,
+        "callConfirmationTimeout": 300,
+        "verificationBreakInterval": 30,
+        "timeForUploading": 60
+    }
+}
