@@ -108,6 +108,11 @@ html, body {
  *
  */
 
+.btn:focus,.btn:active {
+  outline: none !important;
+  box-shadow: none;
+}
+
 .btn-chat-submit {
   background-image: linear-gradient(to bottom, rgba(250,207,96,1), rgba(246,151,21,1));
   background-repeat: repeat-x;
@@ -133,10 +138,6 @@ html, body {
 
 .chat-input {
   background-color: white;
-}
-
-#file-select {
-  margin-top: 10px;
 }
 
 #file-drag-message {
