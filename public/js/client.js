@@ -206,11 +206,6 @@ $(document).ready(function () {
     event.preventDefault();
   });
 
-  $("button").on('click', function(e){
-    e.preventDefault();
-    //ajax code here
-});
-
   //prep for login display - set paragraphs and titles
   if (customMode){
     $("#paragraph-block").hide();

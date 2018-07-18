@@ -108,6 +108,11 @@ html, body {
  *
  */
 
+.btn-chat-submit {
+  background-image: linear-gradient(to bottom, rgba(250,207,96,1), rgba(246,151,21,1));
+  background-repeat: repeat-x;
+}
+
 .input-group {
   padding-bottom: 10px;
 }
