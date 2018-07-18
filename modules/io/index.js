@@ -8,7 +8,8 @@ const smsAuth       = require('../smsRuAuth'),
 
 const callConfirmationCheckInterval = config.get('Timers.callConfirmationCheckInterval'),
       callConfirmationTimeout       = config.get('Timers.callConfirmationTimeout'),
-      verificationDelay             = config.get('Timers.verificationDelay');
+      verificationDelay             = config.get('Timers.verificationDelay'),
+      configMessages                = config.get('Messages');
 
 function onConnection(socket) {
     uploader.initialize(socket);
@@ -77,8 +78,9 @@ function onConnection(socket) {
         //Confirm join
         socket.emit('joinConfirm');
 
-        //send menu
+        //send menu and welcome message
         socket.sendChatData(await buttonActions['root_action'](socket));
+        socket.sendChatData({ type: 'text', value: configMessages.welcome });
     }); 
 
     //Emit chat message

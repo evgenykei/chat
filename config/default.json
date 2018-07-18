@@ -17,5 +17,9 @@
         "callConfirmationTimeout": 300,
         "verificationDelay": 30,
         "timeForUploading": 60
+    },
+
+    "Messages": {
+        "welcome": "Добро пожаловать в чат компании. Выберите один из пунктов меню."
     }
 }
