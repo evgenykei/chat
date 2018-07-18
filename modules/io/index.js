@@ -73,8 +73,12 @@ function onConnection(socket) {
     
         //set socket password
         socket.auth(phone, code);
-    
+
+        //Confirm join
         socket.emit('joinConfirm');
+
+        //send menu
+        socket.sendChatData(await buttonActions['root_action'](socket));
     }); 
 
     //Emit chat message

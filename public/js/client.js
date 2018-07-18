@@ -15,6 +15,32 @@ function showLogin() {
   $("#login-screen").show();
 }
 
+function buildMenu(buttons) {
+  let panel = $("#buttonPanel");
+  panel.empty();
+
+  let inRow = 0;
+  buttons.reduce(function(buttons) {
+    buttons.slice(0, 3).forEach((button, i, arr) => {
+      let cell = $("<div class=\"pb-2\">");
+
+      if (arr.length !== 1){
+        if (i == 0) cell.addClass("pr-1")
+        else if (i == arr.length - 1) cell.addClass("pl-1");
+        else cell.addClass("pr-1 pl-1");
+      }
+
+      if (arr.length === 3) cell.addClass("col-sm-4 col-md-4");
+      else if (arr.length === 2) cell.addClass("col-sm-6 col-md-6");
+      else cell.addClass("col-sm-12 col-md-12");
+
+      $('<button id="' + button.action + '" class="menu-button btn btn-primary btn-block">' + button.title + '</button>').appendTo(cell);
+      cell.appendTo(panel);
+    });
+    return buttons.slice(3);
+  }, buttons);
+}
+
 function sendJoinReq(tryCode){
   if (tryCode === "" || tryCode.length < 4) {
     postConnectStatus("<li>Please verify your phone number</li>");
@@ -248,6 +274,7 @@ $(document).ready(function () {
   });
 
   $(document).on('click', '.menu-button', function(event) {
+    $("#buttonPanel").empty();
     socket.emit('buttonAction', event.target.id);
   });
 
@@ -384,11 +411,8 @@ $(document).ready(function () {
         msgCore = "<span class=\"text-danger\">Image blocked by configuration</span>";
     }
     else if (payload.type === 'menu') {
-      msgCore = '';
-
-      JSON.parse(msg).forEach(function(button) {
-        msgCore += '<button id="' + button.action + '" class="menu-button btn-space btn-primary btn">' + button.title + '</button>';
-      });
+      buildMenu(JSON.parse(msg));
+      return;
     }
     else if (payload.type === 'upload') {
       msgCore = 'Server requests file(s) to upload. You have ' + msg + ' seconds.';
