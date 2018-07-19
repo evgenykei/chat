@@ -1,0 +1,21 @@
+{
+    "short_name": "SAPbot",
+    "name": "SAPBot",
+    "icons": [
+      {
+        "src": "/icons/sap-icon-128x128.png",
+        "type": "image/png",
+        "sizes": "128x128"
+      },
+      {
+        "src": "/icons/sap-icon-512x512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ],
+    "start_url": "/",
+    "background_color": "#FFFFFF",
+    "display": "standalone",
+    "scope": "/",
+    "theme_color": "#FFFFFF"
+  }

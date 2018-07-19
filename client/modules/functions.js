@@ -1,5 +1,7 @@
-const CryptoJS   = require('crypto-js'),
-      _ = require('underscore');
+const Rabbit   = require('crypto-js/rabbit'),
+      Utf8     = require('crypto-js/enc-utf8'),
+      Chart    = require('chart.js'),
+      _        = require('underscore');
 
 const config = require('./config');
 
@@ -33,15 +35,47 @@ module.exports = functions = {
      * 
      */
 
-    postChat: function(message, mentionStatus) {
-        $("#msgs").append(message);
+    postChat: function(type, message, from) {
+        var text, classes, mentioned;
+
+        if (config.phone === from) classes = "my-message";
+        else {
+            classes = "their-message";
+            mentioned = message.indexOf(config.phone) > -1;
+            if (type === 'chart') classes += " chart";
+            if (mentioned) classes += " mentioned";
+        }
+
+        text = $("<div class=\"message " + classes + "\" id=\"message-" + config.messageCount + "\"></div>")
+        if (from === "Server") { 
+            $("<span class=\"message-metadata fa-stack fa-lg\"><i class=\"far fa-circle fa-stack-2x\"></i><i class=\"fa fa-robot fa-stack-1x\"></i></span>").appendTo(text);
+            $("<span class=\"message-body\"> " + message + "</span>").appendTo(text);
+        }
+        else {
+            $("<span class=\"message-body\"> " + message + "</span>").appendTo(text);
+            $("<span class=\"message-metadata fa-stack fa-lg\"><i class=\"far fa-circle fa-stack-2x\"></i><i class=\"fa fa-user-tie fa-stack-1x\"></i></span>").appendTo(text); 
+        } 
+
+        this.printText(text, mentioned);
+    },
+
+    /* 
+     *
+     * Print text to chat
+     * 
+     */
+
+    printText: function(text, mentionStatus) {
+        $("#msgs").append(text);
         $("#msgs").append("<div class=\"clearfix\"></div>");
         $(window).scrollTop($(window).scrollTop() + 5000);
 
         //handle the options for the window being in and out of focus
         if (($('input[name=config-audio]:checked').val() == "1" && !document.hasFocus()) || mentionStatus) {
             config.notify.play();
-        }  
+        }
+        
+        config.messageCount++;
     },
 
     /* 
@@ -89,13 +123,62 @@ module.exports = functions = {
 
     /* 
      *
+     * Build HTML for chart
+     * 
+     */
+
+    buildChart: function(elementId, data) {
+        data = [];
+        for (var i = 0; i < 6; i++)
+            data[i] = Math.random() * (20 - 1) + 1;
+
+        new Chart($("#" + elementId)[0].getContext("2d"), {
+            type: 'bar',
+            data: {
+                labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+                datasets: [{
+                    label: '# of Votes',
+                    data: data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        });
+    },
+
+    /* 
+     *
      * Decrypt string using password
      * 
      */
 
     decryptOrFail: function(str, password) {
-        var encoded = CryptoJS.Rabbit.decrypt(str, password);
-        return encoded.toString(CryptoJS.enc.Utf8);
+        var encoded = Rabbit.decrypt(str, password);
+        return encoded.toString(Utf8);
     },
 
     /* 
@@ -204,7 +287,7 @@ module.exports = functions = {
         var encrypted = null;
 
         if (msg !== "") {
-            encrypted = CryptoJS.Rabbit.encrypt(msg, config.password);
+            encrypted = Rabbit.encrypt(msg, config.password);
             socket.emit("textSend", encrypted.toString());
         }
 

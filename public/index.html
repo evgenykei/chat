@@ -8,27 +8,31 @@
    <meta name="application-name" content="SAPbot" />
    <meta name="author" content="" />
    <meta name="robots" content="All" />
-   <meta name="description" content="" />
+   <meta name="description" content="SPAbot" />
    <meta name="keywords" content="" />
    <meta name="rating" content="General" />
    <meta name="dcterms.contributor" content="" />
    <meta name="dcterms.creator" content="" />
    <meta name="dcterms.publisher" content="" />
-   <meta name="dcterms.description" content="" />
+   <meta name="dcterms.description" content="SPAbot" />
    <meta name="dcterms.rights" content="2018" />
    <meta property="og:type" content="website" />
    <meta property="og:title" content="Home" />
-   <meta property="og:description" content="" />
+   <meta property="og:description" content="SPAbot" />
    <meta property="twitter:title" content="Home" />
-   <meta property="twitter:description" content="" />
+   <meta property="twitter:description" content="SPAbot" />
+
+   <noscript>This app required javascript for work</noscript>
 
    
    <meta charset="UTF-8">
    
-   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=yes">
+   <meta name="theme-color" content="#FFFFFF"/>
    <meta name="apple-mobile-web-app-capable" content="yes" />
    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
    <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon" />
+   <link rel="manifest" href="/manifest.json">
 
    <!-- Apple Touch Icons -->
    <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-touch/apple-touch-icon-57x57.png" />   
@@ -49,6 +53,7 @@
 </head>
 
 <body id="main-body">
+
     <div id="login-screen" class="container" style="display: none;">
         <div class="row">
             <div class="col-md-4 offset-md-4">
@@ -56,6 +61,7 @@
                 <div class="account-wall">
                     <img class="profile-img" src="/icons/apple-touch/apple-touch-icon-120x120.png" alt="">
                     <form id="signInForm" class="form-signin">
+                        <label for="phone" class="sr-only">Phone number</label>
                         <input id="phone" type="tel" class="form-control" placeholder="Phone number" required autofocus>
                         <button id="verifySms" class="btn btn-primary btn-block">Verify via SMS</button>
                         <button id="verifyCall" class="btn btn-primary btn-block">Verify via Call</button>
@@ -76,25 +82,7 @@
                 <div class="card-header">
                     <h3 class="card-title"></h3>
                 </div>
-                <!--<div class="card-body">
-                    <label>
-                        <input type="checkbox" id="config-timestamps" checked="checked"> Show timestamps
-                    </label>
-                    <label>
-                        <input type="checkbox" id="config-receive-imgs" checked="checked"> Receive images
-                    </label>
-                    <label>
-                        <input type="radio" id="config-audio" name="config-audio" value="0"> Play new message alert on mention only
-                    </label>
-	                <label>
-                        <input type="radio" id="config-audio" name="config-audio" value="1" checked="checked"> Play new message alert on mention or unfocused window
-                    </label>
-                    <label id="config-imglink-container" class="hidden">
-                        <input type="checkbox" id="config-imglink"> Display image download links
-                    </label>
-                </div>-->
             </div>
-            <!--<span id="file-drag-message" class="d-none d-md-block">Drag and drop to send images.</span>-->
         </div>
 
         <div id="conversation" class="col-md-9 offset-md-2">
@@ -113,7 +101,6 @@
                 <input type="text" class="form-control" id="msg" placeholder="Message">
                 <div class="input-group-append">
                     <button id="chat-submit" class="btn btn-chat-submit"><img src="/icons/sap-icon-transparent-32x32.png"></img></button>
-                    <!--<button id='logout' class="btn btn-danger">Logout</button>-->
                 </div>                
             </div>
             <div class="row" id="buttonPanel"></div>                  

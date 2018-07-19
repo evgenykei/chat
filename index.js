@@ -46,6 +46,7 @@ app.use(bodyParser.urlencoded({ extended : false }));
 app.use(methodOverride());
 app.use(compression());
 app.use(serveStatic(__dirname + '/public'));
+app.use('/webfonts', serveStatic(__dirname + '/node_modules/@fortawesome/fontawesome-free/webfonts'));
 app.use(siofu.router);
 
 //load modules

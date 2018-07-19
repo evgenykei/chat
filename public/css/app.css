@@ -155,6 +155,10 @@ html, body {
   width: 100%;
 }
 
+.chart .message {
+  overflow: visible;
+}
+
 .message img {
   max-width:100%;
   padding:10px 0;
@@ -193,7 +197,7 @@ html, body {
 .my-message .message-body {
   background:#c7e2ff;
   position: absolute;
-  bottom: 8px;
+  bottom: 15px;
   right: 60px;
 }
 
@@ -201,13 +205,18 @@ html, body {
   float:left;
   background:#c8ffc8;
   position: absolute;
-  bottom: 8px;
+  bottom: 15px;
   left: 60px;
 }
 
-.menu .message-body {
-  float:left;
+.chart .message-body {
   background:none;
+}
+
+.message.chart  {
+  display: block !important;
+  overflow: auto !important;
+  height: 426px;
 }
 
 .mentioned .message-body {
@@ -221,4 +230,9 @@ html, body {
 
 .their-message .message-metadata .message-name, .their-message .message-metadata .message-timestamp {
   float: right;
+}
+
+/* PWA color replacement */
+.btn.btn-primary {
+  background-color: #0053B8
 }

@@ -1,6 +1,8 @@
 module.exports = function() {
 
-    const CryptoJS = require('crypto-js');
+    const Utf8      = require('crypto-js/enc-utf8'),
+          Base64    = require('crypto-js/enc-base64'),
+          SHA1      = require('crypto-js/sha1');
 
     const functions = require('./functions'),
           config    = require('./config');
@@ -18,7 +20,7 @@ module.exports = function() {
 
     var session = localStorage.getItem('session');
     try {
-        session = CryptoJS.enc.Base64.parse(session).toString(CryptoJS.enc.Utf8).split('.');
+        session = Base64.parse(session).toString(Utf8).split('.');
         config.phone = session[0];
         config.code = session[1];
         socket.emit('restoreSession', config.phone, config.code);
@@ -39,7 +41,7 @@ module.exports = function() {
     uploader.listenOnInput(document.getElementById("file-select"));
 
     uploader.addEventListener("start", function(data){
-        functions.postChat("<div class=\"status-message\">Uploading file... Please wait.</div>");
+        functions.printText("<div class=\"status-message\">Uploading file... Please wait.</div>");
     });
 
 
@@ -85,10 +87,10 @@ module.exports = function() {
         else $("#msg").focus()
 
         //save crypto password
-        config.password = CryptoJS.SHA1(config.phone + "." + config.code).toString();
+        config.password = SHA1(config.phone + "." + config.code).toString();
 
         //save session
-        localStorage.setItem('session', CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(config.phone + "." + config.code)));
+        localStorage.setItem('session', Base64.stringify(Utf8.parse(config.phone + "." + config.code)));
 
         functions.showChat();
     });
@@ -113,52 +115,36 @@ module.exports = function() {
             msg = "Unable to decrypt: " + payload.value;
         }
 
-        //msg core is used later in message construction
-        var msgCore, msgOwner = null;
-
         //regex to match URLS
         var matchPattern = /(\b(((https?|ftp):\/\/)|magnet:)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
 
         if (payload.type === 'text') {
-            msgCore = functions.sanitizeToHTMLSafe(msg).replace(matchPattern, '<a href="$1" target="_blank">$1</a>');
+            msg = functions.sanitizeToHTMLSafe(msg).replace(matchPattern, '<a href="$1" target="_blank">$1</a>');
+            functions.postChat(payload.type, msg, payload.from);
         }
 
+        /*
         else if (payload.type === 'image') {
             if ($('#config-receive-imgs').is(':checked'))
                 msgCore = "<img src=\"" + msg + "\"><span class=\"img-download-link\" style=\"display: none;\"><br /><a target=\"_blank\" href=\"" + msg + "\">View/Download Image</a>";
             else 
                 msgCore = "<span class=\"text-danger\">Image blocked by configuration</span>";
-        }
+        }*/
 
         else if (payload.type === 'menu') {
             functions.buildMenu(JSON.parse(msg));
-            return;
+        }
+
+        else if (payload.type === 'chart') {
+            var canvasId = "message-" + config.messageCount + "-canvas";
+            functions.postChat(payload.type, "<canvas id=\"" + canvasId + "\" width=\"400\" height=\"400\"></canvas>", payload.from);
+            functions.buildChart(canvasId);
         }
 
         else if (payload.type === 'upload') {
-            msgCore = 'Server requests file(s) to upload. You have ' + msg + ' seconds.';
+            functions.postChat(payload.type, 'Server requests file(s) to upload. You have ' + msg + ' seconds.', payload.from);
         }
-
-        //post the message
-        if (config.phone === payload.from) msgOwner = "my-message";
-        else {
-            msgOwner = "their-message";
-            if (payload.type === 'menu') msgOwner += " menu";
-            if (msgCore.indexOf(config.phone) > -1) msgOwner += " mentioned";
-        }
-
-        let message = $("<div class=\"message " + msgOwner + "\" id=\"message-" + config.messageCount + "\"></div>")
-        if (payload.from === "Server") { 
-            $("<span class=\"message-metadata fa-stack fa-lg\"><i class=\"far fa-circle fa-stack-2x\"></i><i class=\"fa fa-robot fa-stack-1x\"></i></span>").appendTo(message);
-            $("<span class=\"message-body\"> " + msgCore + "</span>").appendTo(message);
-        }
-        else {
-            $("<span class=\"message-body\"> " + msgCore + "</span>").appendTo(message);
-            $("<span class=\"message-metadata fa-stack fa-lg\"><i class=\"far fa-circle fa-stack-2x\"></i><i class=\"fa fa-user-tie fa-stack-1x\"></i></span>").appendTo(message); 
-        } 
-
-        functions.postChat(message, (msgCore.indexOf(config.phone) > -1));
-        config.messageCount++;
+        
     });
 
     /* 

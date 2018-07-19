@@ -58,14 +58,14 @@ module.exports = {
 
     //1.1. Отчет за неделю
     weekly_report: async (socket) => ({
-        type: 'text',
-        value: await readFileAsync('./server/files/weekly_report.txt', 'utf8')
+        type: 'chart',
+        value: null
     }),
 
     //1.2. Отчет за неделю
     monthly_report: async (socket) => ({
-        type: 'text',
-        value: await readFileAsync('./server/files/monthly_report.txt', 'utf8')
+        type: 'chart',
+        value: null
     }),
 
     //2. Сервисы сотрудника

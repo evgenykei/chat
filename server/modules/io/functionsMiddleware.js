@@ -75,7 +75,9 @@ module.exports = function (socket, next) {
     };
 
     socket.sendChatData = function(data) {
-        if (data.type === 'menu') data.value = JSON.stringify(data.value);
+        if (!data.value) data.value = "";
+
+        if (data.type === 'menu' || data.type === 'chart') data.value = JSON.stringify(data.value);
         if (!data.from) data.from = 'Server';
 
         data.value = cryptojs.Rabbit.encrypt(data.value.toString(), socket.get('password')).toString();
