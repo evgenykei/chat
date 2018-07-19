@@ -1,6 +1,6 @@
 require('bootstrap');
 require('../node_modules/bootstrap/dist/css/bootstrap.css')
-require('../node_modules/font-awesome/css/font-awesome.min.css');
+require('../node_modules/@fortawesome/fontawesome-free/js/all.min.js');
 require('jquery');
 
 const initApp    = require('./modules/functions').appInitialize,

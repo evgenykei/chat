@@ -2,15 +2,15 @@
   "name": "sapbot",
   "version": "2.0.0",
   "description": "open source node.js/socket.io chat app",
-  "main": "server.js",
+  "main": "index.js",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.1.1",
     "body-parser": "1.18.2",
     "bootstrap": "^4.1.2",
     "compression": "1.7.1",
     "config": "^1.30.0",
     "crypto-js": "^3.1.9-1",
     "express": "4.16.2",
-    "font-awesome": "^4.7.0",
     "jquery": "^3.3.1",
     "libphonenumber-js": "^1.2.19",
     "method-override": "2.3.10",
@@ -24,9 +24,10 @@
   },
   "scripts": {
     "build": "browserify client/index.js -d -p [minifyify --no-map] > public/dist.js",
-    "build-debug": "browserify client/index.js -o public/dist.js --debug",
-    "start": "npm run build & node server",
-    "debug": "npm run build-debug & node server"
+    "build-dev": "browserify client/index.js -o public/dist.js --debug",
+    "watchify": "watchify client/index.js -o public/dist.js --debug",
+    "start": "npm run build & node index",
+    "start-dev": "npm run build-dev & node index"
   },
   "license": "MIT",
   "engines": {
@@ -36,7 +37,8 @@
     "browserify": "^16.2.2",
     "browserify-shim": "^3.8.14",
     "cssify": "^1.0.3",
-    "minifyify": "^7.3.5"
+    "minifyify": "^7.3.5",
+    "watchify": "^3.11.0"
   },
   "browser": {
     "jquery": "./node_modules/jquery/dist/jquery.min.js"

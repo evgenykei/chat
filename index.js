@@ -46,7 +46,6 @@ app.use(bodyParser.urlencoded({ extended : false }));
 app.use(methodOverride());
 app.use(compression());
 app.use(serveStatic(__dirname + '/public'));
-app.use('/fonts', serveStatic(__dirname + '/node_modules/font-awesome/fonts'));
 app.use(siofu.router);
 
 //load modules

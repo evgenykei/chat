@@ -6,7 +6,7 @@ module.exports = function() {
           config    = require('./config');
 
     
-    const socket = io.connect("http://127.0.0.1:3000");
+    const socket = io.connect("http://127.0.0.1:" + config.ioPort);
     
     module.exports.socket = socket;
 
@@ -147,7 +147,17 @@ module.exports = function() {
             if (msgCore.indexOf(config.phone) > -1) msgOwner += " mentioned";
         }
 
-        functions.postChat("<div class=\"message " + msgOwner + "\" id=\"message-" + config.messageCount + "\"><span class=\"message-metadata\"><span class=\"message-name\">" + payload.from + "</span><br /><span class=\"message-timestamp\">" + functions.getTimeStamp() + " </span></strong></span><span class=\"message-body\"> " + msgCore + "</span></div>", (msgCore.indexOf(config.phone) > -1));
+        let message = $("<div class=\"message " + msgOwner + "\" id=\"message-" + config.messageCount + "\"></div>")
+        if (payload.from === "Server") { 
+            $("<span class=\"message-metadata fa-stack fa-lg\"><i class=\"far fa-circle fa-stack-2x\"></i><i class=\"fa fa-robot fa-stack-1x\"></i></span>").appendTo(message);
+            $("<span class=\"message-body\"> " + msgCore + "</span>").appendTo(message);
+        }
+        else {
+            $("<span class=\"message-body\"> " + msgCore + "</span>").appendTo(message);
+            $("<span class=\"message-metadata fa-stack fa-lg\"><i class=\"far fa-circle fa-stack-2x\"></i><i class=\"fa fa-user-tie fa-stack-1x\"></i></span>").appendTo(message); 
+        } 
+
+        functions.postChat(message, (msgCore.indexOf(config.phone) > -1));
         config.messageCount++;
     });
 

@@ -1,7 +1,10 @@
 const config = require('config'),
       cryptojs = require('crypto-js');
 
-const sessionLife = config.get('Timers.sessionLife');
+const buttonActions = require('../menu');
+
+const sessionLife    = config.get('Timers.sessionLife'),
+      configMessages = config.get('Messages');
 
 var socket_data = {};
 var socket_intervals = {};
@@ -89,11 +92,15 @@ module.exports = function (socket, next) {
         }
     };
 
-    socket.restoreSession = function(phone, code) {
+    socket.restoreSession = async function(phone, code) {
         if (!socket_sessions[phone] || socket_sessions[phone] !== code) return socket.emit('wrongSession');
 
         socket.auth(phone, code);
         socket.emit('joinConfirm');
+
+        //send menu and welcome message
+        socket.sendChatData(await buttonActions['root_action'](socket));
+        socket.sendChatData({ type: 'text', value: configMessages.welcome });
     };
 
     next();

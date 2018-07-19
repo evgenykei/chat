@@ -151,6 +151,8 @@ html, body {
 .message {
   display:inline-block;
   overflow: hidden;
+  position: relative;
+  width: 100%;
 }
 
 .message img {
@@ -171,7 +173,7 @@ html, body {
 }
 
 .message-metadata {
-  font-size: 11px;
+  font-size: 24px;
 }
 
 /*
@@ -190,11 +192,17 @@ html, body {
 
 .my-message .message-body {
   background:#c7e2ff;
+  position: absolute;
+  bottom: 8px;
+  right: 60px;
 }
 
 .their-message .message-body {
   float:left;
   background:#c8ffc8;
+  position: absolute;
+  bottom: 8px;
+  left: 60px;
 }
 
 .menu .message-body {

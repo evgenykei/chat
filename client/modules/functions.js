@@ -51,10 +51,7 @@ module.exports = functions = {
      */
 
     postConnectStatus: function(html) {
-        if ($("#connect-status").children().length === 5) { 
-            var slice = $("#connect-status").children().slice(1);
-            $("#connect-status").html(slice);
-        }
+        $("#connect-status").empty();
         $("#connect-status").append(html);
     },
 
@@ -74,14 +71,14 @@ module.exports = functions = {
                 var cell = $("<div class=\"pb-2\">");
 
                 if (arr.length !== 1){
-                    if (i == 0) cell.addClass("pr-1")
-                    else if (i == arr.length - 1) cell.addClass("pl-1");
-                    else cell.addClass("pr-1 pl-1");
+                    if (i == 0) cell.addClass("pr-sm-1")
+                    else if (i == arr.length - 1) cell.addClass("pl-sm-1");
+                    else cell.addClass("pr-sm-1 pl-sm-1");
                 }
             
-                if (arr.length === 3) cell.addClass("col-sm-4 col-md-4");
-                else if (arr.length === 2) cell.addClass("col-sm-6 col-md-6");
-                else cell.addClass("col-sm-12 col-md-12");
+                if (arr.length === 3) cell.addClass("col-sm-4");
+                else if (arr.length === 2) cell.addClass("col-sm-6");
+                else cell.addClass("col-sm-12");
             
                 $('<button id="' + button.action + '" class="menu-button btn btn-primary btn-block">' + button.title + '</button>').appendTo(cell);
                 cell.appendTo(panel);
