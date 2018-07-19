@@ -4,34 +4,50 @@
   "description": "open source node.js/socket.io chat app",
   "main": "server.js",
   "dependencies": {
-    "@bower_components/bootstrap": "twbs/bootstrap#4.1.2",
-    "@bower_components/crypto-js": "brix/crypto-js#3.1.9",
-    "@bower_components/font-awesome": "FortAwesome/Font-Awesome#5.1.1",
-    "@bower_components/jquery": "jquery/jquery-dist#3.2.1",
-    "@bower_components/typeahead.js": "twitter/typeahead.js#0.11.1",
-    "@bower_components/underscore": "jashkenas/underscore#1.8.3",
     "body-parser": "1.18.2",
+    "bootstrap": "^4.1.2",
     "compression": "1.7.1",
     "config": "^1.30.0",
     "crypto-js": "^3.1.9-1",
     "express": "4.16.2",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.3.1",
     "libphonenumber-js": "^1.2.19",
     "method-override": "2.3.10",
+    "popper.js": "^1.14.3",
     "serve-static": "1.13.1",
     "sms_ru": "0.0.1",
     "socket.io": "2.0.4",
     "socketio-file-upload": "^0.6.1",
-    "superagent": "^3.8.3"
-  },
-  "devDependencies": {
-    "artillery": "^1.6.0-22"
+    "superagent": "^3.8.3",
+    "underscore": "^1.9.1"
   },
   "scripts": {
-    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/@bower_components'), 'components', 'junction') } catch (e) { }\"",
-    "start": "node server.js"
+    "build": "browserify client/index.js -d -p [minifyify --no-map] > public/dist.js",
+    "build-debug": "browserify client/index.js -o public/dist.js --debug",
+    "start": "npm run build & node server",
+    "debug": "npm run build-debug & node server"
   },
   "license": "MIT",
   "engines": {
     "yarn": ">= 1.0.0"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.2",
+    "browserify-shim": "^3.8.14",
+    "cssify": "^1.0.3",
+    "minifyify": "^7.3.5"
+  },
+  "browser": {
+    "jquery": "./node_modules/jquery/dist/jquery.min.js"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim",
+      "cssify"
+    ]
+  },
+  "browserify-shim": {
+    "jquery": "$"
   }
 }

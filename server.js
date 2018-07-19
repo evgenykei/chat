@@ -8,7 +8,7 @@ const config         = require('config'),
       methodOverride = require('method-override');
       siofu          = require('socketio-file-upload');
 
-const ioModule = require('./modules/io');
+const ioModule = require('./server/modules/io');
 
 var app = express();
 var server;
@@ -46,7 +46,7 @@ app.use(bodyParser.urlencoded({ extended : false }));
 app.use(methodOverride());
 app.use(compression());
 app.use(serveStatic(__dirname + '/public'));
-app.use('/components', serveStatic(__dirname + '/node_modules/@bower_components'));
+app.use('/fonts', serveStatic(__dirname + '/node_modules/font-awesome/fonts'));
 app.use(siofu.router);
 
 //load modules

@@ -3,8 +3,8 @@
 
 <head>
    <title>SAPbot</title>
-   <link rel="stylesheet" href="components/bootstrap/dist/css/bootstrap.min.css">
-   <link rel="stylesheet" href="components/font-awesome/web-fonts-with-css/css/fontawesome-all.min.css">
+   <!--<link rel="stylesheet" href="components/bootstrap/dist/css/bootstrap.min.css">
+   <link rel="stylesheet" href="components/font-awesome/web-fonts-with-css/css/fontawesome-all.min.css">-->
    <link rel="stylesheet" href="css/app.css">
    
    <meta name="application-name" content="SAPbot" />
@@ -51,41 +51,6 @@
 </head>
 
 <body id="main-body">
-
-    <!--
-    <div >
-        <div class="row">
-            <div class="main col-md-4 col-md-offset-4">
-                <h1><i class="glyphicon glyphicon-retweet"></i> <span class="app-title-box"></span></h1>
-                <form class="form" id="nameForm">
-                    <div class="form-group">
-
-		    		    <div class="input-group">
-                            <span class="input-group-addon"><i class="glyphicon glyphicon-phone"></i></span>
-                            <input type="tel" class="form-control input-lg" placeholder="phone number" id="phone">
-                            <br />
-                            <br />
-                        </div>
-                    
-		    		    <div class="input-group">
-                            <input type="button" id="verifySms" class="btn btn-primary btn-space" value="Verify via SMS">
-		    			    <input type="button" id="verifyCall" class="btn btn-primary btn-space" value="Verify via Call">
-                        </div>
-
-		    		    <div class="input-group hidden" id="codeDiv">
-                            <span class="input-group-addon"><i class="glyphicon glyphicon-ok"></i></span>
-                            <input type="number" class="form-control input-lg" placeholder="confirmation code" id="code">
-                        </div>
-                    
-		    		    <br />
-                        <input type="submit" name="join" id="join" style="width: 100%;" value="Join" class="btn btn-primary btn-lg mt-5">
-                    </div>
-                </form>
-                <ul id="connect-status" class="list-unstyled"></ul>
-            </div>
-        </div>
-    </div>-->
-
     <div id="login-screen" class="container" style="display: none;">
         <div class="row">
             <div class="col-md-4 offset-md-4">
@@ -118,7 +83,7 @@
                         <input type="checkbox" id="config-timestamps" checked="checked"> Show timestamps
                     </label>
                     <label>
-                        <input type="checkbox" id="config-files" checked="checked"> Receive images
+                        <input type="checkbox" id="config-receive-imgs" checked="checked"> Receive images
                     </label>
                     <label>
                         <input type="radio" id="config-audio" name="config-audio" value="0"> Play new message alert on mention only
@@ -153,20 +118,21 @@
                     <!--<button id='logout' class="btn btn-danger">Logout</button>-->
                 </div>                
             </div>
-            <div class="row" id="buttonPanel"></div>
-                      
+            <div class="row" id="buttonPanel"></div>                  
         </form>
-
     </div>
    
     <!--libraries-->
-    <script src="components/crypto-js/crypto-js.js"></script>
+    <!--<script src="components/crypto-js/crypto-js.js"></script>
     <script src="components/underscore/underscore-min.js"></script>
     <script src="components/jquery/dist/jquery.min.js"></script>
     <script src="components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>    
     <script src="/siofu/client.js"></script>
-    <script src="js/client.js"></script>
+    <script src="js/client.js"></script>-->
+    <script src="/socket.io/socket.io.js"></script>    
+    <script src="/siofu/client.js"></script>
+    <script src="/dist.js"></script>
 </body>
 
 </html>

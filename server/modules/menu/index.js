@@ -59,13 +59,13 @@ module.exports = {
     //1.1. Отчет за неделю
     weekly_report: async (socket) => ({
         type: 'text',
-        value: await readFileAsync('./files/weekly_report.txt', 'utf8')
+        value: await readFileAsync('./server/files/weekly_report.txt', 'utf8')
     }),
 
     //1.2. Отчет за неделю
     monthly_report: async (socket) => ({
         type: 'text',
-        value: await readFileAsync('./files/monthly_report.txt', 'utf8')
+        value: await readFileAsync('./server/files/monthly_report.txt', 'utf8')
     }),
 
     //2. Сервисы сотрудника
@@ -94,25 +94,25 @@ module.exports = {
     //2.1. Сброс пароля
     reset_password: async (socket) => ({
         type: 'text',
-        value: await readFileAsync('./files/reset_password.txt', 'utf8')
+        value: await readFileAsync('./server/files/reset_password.txt', 'utf8')
     }),
 
     //2.2. Запрос количества дней отпуска
     request_vacation_days: async (socket) => ({
         type: 'text',
-        value: await readFileAsync('./files/request_vacation_days.txt', 'utf8')
+        value: await readFileAsync('./server/files/request_vacation_days.txt', 'utf8')
     }),
 
     //2.3. Заявка на отпуск
     request_vacation: async (socket) => ({
         type: 'text',
-        value: await readFileAsync('./files/request_vacation.txt', 'utf8')
+        value: await readFileAsync('./server/files/request_vacation.txt', 'utf8')
     }),    
 
     //3. Обращение в службу поддержки
     contact_support: async (socket) => ({
         type: 'text',
-        value: await readFileAsync('./files/contact_support.txt', 'utf8')
+        value: await readFileAsync('./server/files/contact_support.txt', 'utf8')
     }),  
 
     /*//Uploading example

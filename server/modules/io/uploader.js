@@ -2,7 +2,7 @@ const siofu = require('socketio-file-upload');
 
 function initialize(socket) {
     var uploader = new siofu();
-    uploader.dir = './upload';
+    uploader.dir = './server/upload';
     uploader.maxFileSize = 10485760;
     uploader.listen(socket);
 
