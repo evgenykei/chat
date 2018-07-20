@@ -8,6 +8,9 @@ const config         = require('config'),
       methodOverride = require('method-override');
       siofu          = require('socketio-file-upload');
 
+//Loading environment variables
+require('dotenv').config()
+
 const ioModule = require('./server/modules/io');
 
 var app = express();
@@ -18,22 +21,22 @@ var server;
  * HTTP or HTTPS server configuration
  *
  ***/ 
-if (process.env.ssl_enabled === true) {
+if (process.env.SSL_ENABLED === true) {
 
     //express instance for redirecting to HTTPS
     var httpapp = express();
 
     express().get('*', function(req,res) {  
-        res.redirect(process.env.host);
+        res.redirect(process.env.HOST);
     })
     
     httpapp.listen(80);
 
     //setting HTTPS instance
     server = https.createServer({
-        key: fs.readFileSync(process.env.ssl_key_path),
-        cert: fs.readFileSync(process.env.ssl_cert_path),
-        ca: fs.readFileSync(process.env.ssl_ca_path)
+        key: fs.readFileSync(process.env.SSL_KEY_PATH),
+        cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+        ca: fs.readFileSync(process.env.SSL_CA_PATH)
     }, app);
 } 
 else {
@@ -51,6 +54,6 @@ app.use(siofu.router);
 //load modules
 ioModule.initialize(server);
 
-server.listen(process.env.port || 3000, function () {
+server.listen(process.env.PORT || 3000, function () {
     console.log('Express server listening on port ' + server.address().port);
 });
