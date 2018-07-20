@@ -1,6 +1,7 @@
 {
     "short_name": "SAPbot",
     "name": "SAPBot",
+    "display": "standalone",
     "icons": [
       {
         "src": "/icons/sap-icon-128x128.png",
