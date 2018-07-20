@@ -8,7 +8,7 @@ module.exports = function() {
           config    = require('./config');
 
     
-    const socket = io.connect("http://127.0.0.1:" + config.ioPort);
+    const socket = io.connect();
     
     module.exports.socket = socket;
 

@@ -1,4 +1,5 @@
 const config         = require('config'),
+      fs             = require('fs'),
       express        = require('express'),
       http           = require('http'),
       https          = require('https'),      
@@ -21,16 +22,16 @@ var server;
  * HTTP or HTTPS server configuration
  *
  ***/ 
-if (process.env.SSL_ENABLED === true) {
+if (process.env.SSL_ENABLED === 'true') {
 
     //express instance for redirecting to HTTPS
     var httpapp = express();
 
-    express().get('*', function(req,res) {  
-        res.redirect(process.env.HOST);
+    httpapp.get('*', function(req,res) {  
+        res.redirect('https://' + req.headers.host + req.url);
     })
     
-    httpapp.listen(80);
+    httpapp.listen(process.env.SSL_REDIRECT_PORT);
 
     //setting HTTPS instance
     server = https.createServer({
