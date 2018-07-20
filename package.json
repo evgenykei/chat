@@ -26,9 +26,9 @@
   "scripts": {
     "build": "browserify client/index.js -d -p [minifyify --no-map] > public/dist.js",
     "build-dev": "browserify client/index.js -o public/dist.js --debug",
-    "watchify": "watchify client/index.js -o public/dist.js --debug",
-    "start": "npm run build & node index",
-    "start-dev": "npm run build-dev & node index"
+    "watch": "watchify client/index.js -o public/dist.js --debug",
+    "start": "yarn run build & node index",
+    "start-dev": "yarn run build-dev & node index"
   },
   "license": "MIT",
   "engines": {
