@@ -4,9 +4,9 @@
     "display": "standalone",
     "icons": [
       {
-        "src": "/icons/sap-icon-128x128.png",
+        "src": "/icons/sap-icon-192x192.png",
         "type": "image/png",
-        "sizes": "128x128"
+        "sizes": "192x192"
       },
       {
         "src": "/icons/sap-icon-512x512.png",
@@ -16,7 +16,6 @@
     ],
     "start_url": "/",
     "background_color": "#FFFFFF",
-    "display": "standalone",
     "scope": "/",
     "theme_color": "#FFFFFF"
   }
