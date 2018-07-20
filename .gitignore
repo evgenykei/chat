@@ -1,4 +1,4 @@
+.env
 node_modules/
 components/
-ssl/
 public/dist.js

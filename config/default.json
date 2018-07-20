@@ -1,9 +1,4 @@
 {
-    "Express": {
-        "host": "https://SAPbot.ru",
-        "port": 3000
-    },
-
     "SMSAuth": {
         "apiKey": "4DD5D7BE-1EDE-CB36-A534-8BC34DDD994B",
         "smsText": "SAPbot verification code: %s"

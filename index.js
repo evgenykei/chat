@@ -12,29 +12,28 @@ const ioModule = require('./server/modules/io');
 
 var app = express();
 var server;
-var enable_ssl = false;
 
 /***
  *
  * HTTP or HTTPS server configuration
  *
  ***/ 
-if (enable_ssl === true) {
+if (process.env.ssl_enabled === true) {
 
     //express instance for redirecting to HTTPS
     var httpapp = express();
 
     express().get('*', function(req,res) {  
-        res.redirect(config.get('Express.host'));
+        res.redirect(process.env.host);
     })
     
     httpapp.listen(80);
 
     //setting HTTPS instance
     server = https.createServer({
-        key: fs.readFileSync('ssl/ssl.key'),
-        cert: fs.readFileSync('ssl/ssl.crt'),
-        ca: fs.readFileSync('ssl/ssl.ca-bundle')
+        key: fs.readFileSync(process.env.ssl_key_path),
+        cert: fs.readFileSync(process.env.ssl_cert_path),
+        ca: fs.readFileSync(process.env.ssl_ca_path)
     }, app);
 } 
 else {
@@ -52,6 +51,6 @@ app.use(siofu.router);
 //load modules
 ioModule.initialize(server);
 
-server.listen(process.env.PORT || config.get('Express.port'), function () {
+server.listen(process.env.port || 3000, function () {
     console.log('Express server listening on port ' + server.address().port);
 });
