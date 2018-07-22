@@ -137,7 +137,7 @@ module.exports = function() {
 
         else if (payload.type === 'chart') {
             var canvasId = "message-" + config.messageCount + "-canvas";
-            functions.postChat(payload.type, "<canvas id=\"" + canvasId + "\" width=\"400\" height=\"400\"></canvas>", payload.from);
+            functions.postChat(payload.type, "<canvas id=\"" + canvasId + "\" width=\"auto\" height=\"auto\"></canvas>", payload.from);
             functions.buildChart(canvasId);
         }
 

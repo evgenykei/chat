@@ -57,16 +57,15 @@
     <div id="login-screen" class="container" style="display: none;">
         <div class="row">
             <div class="col-md-4 offset-md-4">
-                <h1 class="text-center login-title">Sign in to continue to SAPbot</h1>
                 <div class="account-wall">
                     <img class="profile-img" src="/icons/apple-touch/apple-touch-icon-120x120.png" alt="">
                     <form id="signInForm" class="form-signin">
                         <label for="phone" class="sr-only">Phone number</label>
                         <input id="phone" type="tel" class="form-control" placeholder="Phone number" required autofocus>
-                        <button id="verifySms" class="btn btn-primary btn-block">Verify via SMS</button>
-                        <button id="verifyCall" class="btn btn-primary btn-block">Verify via Call</button>
+                        <button id="verifySms" class="btn btn-secondary btn-block">Verify via SMS</button>
+                        <button id="verifyCall" class="btn btn-secondary btn-block">Verify via Call</button>
                         <input id="code" type="number" class="form-control" placeholder="Confirmation code" style="display: none;">
-                        <button id="join" class="btn btn-primary btn-block" style="display: none;">Sign in</button>
+                        <button id="join" class="btn btn-secondary btn-block" style="display: none;">Sign in</button>
                     </form>
                 </div>
                 <ul id="connect-status" class="list-unstyled"></ul>
@@ -74,37 +73,44 @@
         </div>
     </div>    
 
-    <div id="main-chat-screen" style="display: none;">
-        <div id="header-panel" class="col-md-9 offset-md-2 sticky-top">
-            <h1 class="d-none d-md-block text-center" style="color: #777; "><i class="glyphicon glyphicon-retweet"></i> <a href="/"><span class="app-title-box"></span></a></h1>
-            <h3 class="d-block d-md-none text-center" style="color: #777; "><i class="glyphicon glyphicon-retweet"></i> <a href="/"><span class="app-title-box"></span></a></h3>
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title"></h3>
-                </div>
+    <div id="chat-screen" style="display: none;">
+        <div class="d-flex flex-column col-md-8 offset-md-2 h-100">
+            
+            <div id="header-panel" style="height:10vh;">
+                <label id='logout' class="input-group-text btn btn-outline-info" style="float: right">
+                    <i class="fa fa-long-arrow-alt-right"></i>
+                </label>
             </div>
-        </div>
 
-        <div id="conversation" class="col-md-9 offset-md-2">
-            <div id="msgs"></div>
-        </div>
-        
-        <form id="chatForm" class="chat-input col-md-9 offset-md-2 fixed-bottom">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <label class="input-group-text btn btn-outline-info">
-                        <i class="fa fa-paperclip"></i>
-                        <input type="file" id="file-select" class="d-none" />
-                    </label>
-                    <label id='showMenu' class="input-group-text btn btn-outline-info"><i class="fa fa-bars"></i></button> 
-                </div>
-                <input type="text" class="form-control" id="msg" placeholder="Message">
-                <div class="input-group-append">
-                    <button id="chat-submit" class="btn btn-chat-submit"><img src="/icons/sap-icon-transparent-32x32.png"></img></button>
-                </div>                
+            <div id="conversation" class="h-100">
+                <div id="msgs"></div>
             </div>
-            <div class="row" id="buttonPanel"></div>                  
-        </form>
+
+            <form id="chatForm" class="" style="padding-left:0;padding-right:0;">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <label class="input-group-text btn btn-outline-info">
+                            <i class="fa fa-paperclip"></i>
+                            <input type="file" id="file-select" class="d-none" />
+                        </label>
+                        <label id='showMenu' class="input-group-text btn btn-outline-info">
+                            <i class="fa fa-bars"></i>
+                        </label> 
+                    </div>
+                    <input type="text" class="form-control" id="msg" placeholder="Message">
+                    <div class="input-group-append">
+                        <button id="chat-submit" class="input-group-text btn btn-outline-info">
+                            <span class="fa-stack fa">
+                                <i class="far fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-check fa-stack-1x"></i>
+                            </span>
+                        </button>
+                    </div>                
+                </div>
+                <div class="row" id="buttonPanel"></div>                  
+            </form>
+                    
+        </div>
     </div>
    
     <!--libraries-->

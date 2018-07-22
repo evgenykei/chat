@@ -2,20 +2,30 @@ html, body {
   height: 100%;
 }
 
-#main-chat-screen {
-  padding-top: 10px;
+#chat-screen {
+  height: 100%;
+  padding: 15px;
 }
 
-#header-panel {  
-  background-color: white;
-  padding-bottom: 20px;
+#header-panel {
+  height:400px;
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+  padding: 1.25rem;
+  border-radius: 0.25rem;
+  background-clip: border-box;
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  background-color: #ecf1f5;
 }
 
 #conversation {
+  background-color: #dee5ef;
   font-size: 18px;
-  height: 100%;
   overflow: auto;
-  padding-bottom: 40px;
 }
 
 #msgs {
@@ -108,14 +118,9 @@ html, body {
  *
  */
 
-.btn:focus,.btn:active {
+btn:focus,.btn:active {
   outline: none !important;
   box-shadow: none;
-}
-
-.btn-chat-submit {
-  background-image: linear-gradient(to bottom, rgba(250,207,96,1), rgba(246,151,21,1));
-  background-repeat: repeat-x;
 }
 
 .input-group {
@@ -149,10 +154,10 @@ html, body {
  */
 
 .message {
-  display:inline-block;
-  overflow: hidden;
-  position: relative;
+  display: table;
   width: 100%;
+  border-collapse: separate;
+  border-spacing: 1em;
 }
 
 .chart .message {
@@ -164,75 +169,48 @@ html, body {
   padding:10px 0;
 }
 
-.message-body {
-  border-radius:15px;
-  float:right;
-  padding:0 10px;
+.message-avatar {
+  display: table-cell;
+  vertical-align: top;
+  width: 10%;
 }
 
-.status-message,.message-metadata {
+.message-body {  
+  display: table-cell;
+  width: auto;
+  padding: 0.05em;
+}
+
+.status-message,.message-avatar {
   text-align:center;
   font-style:italic;
   color:#828282;
 }
 
-.message-metadata {
-  font-size: 24px;
+.empty-column {
+  display: table-cell;
+  width: 10%;
 }
 
 /*
  * Per-person customization
  */ 
 
- .my-message,.my-message .message-metadata {
-  float:right;
-  padding: 0 5px 5px 5px
-}
-
-.their-message,.their-message .message-metadata {
-  float: left;
-  padding: 0 5px 5px 5px
-}
 
 .my-message .message-body {
-  background:#c7e2ff;
-  position: absolute;
-  bottom: 15px;
-  right: 60px;
-}
-
-.their-message .message-body {
-  float:left;
-  background:#c8ffc8;
-  position: absolute;
-  bottom: 15px;
-  left: 60px;
-}
-
-.chart .message-body {
-  background:none;
-}
-
-.message.chart  {
-  display: block !important;
-  overflow: auto !important;
-  height: 426px;
-}
-
-.mentioned .message-body {
-  float:left;
-  background:#ffc8c8;
-}
-
-.my-message .message-metadata .messsage-name, .my-message .message-metadata .message-timestamp {
-  float: left;
-}
-
-.their-message .message-metadata .message-name, .their-message .message-metadata .message-timestamp {
+  background:#f2f5fa;  
   float: right;
 }
 
-/* PWA color replacement */
-.btn.btn-primary {
-  background-color: #0053B8
+.their-message .message-body {
+  background:white;  
+  float: left;
+}
+
+.message.chart  {
+  overflow: auto !important;
+}
+
+.mentioned .message-body {
+  background:#ffc8c8;
 }

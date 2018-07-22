@@ -20,7 +20,10 @@ module.exports = function(socket) {
      * 
      */
 
-    $("#showMenu" ).click(function() { socket.emit('buttonAction', 'root_action'); });
+    $("#showMenu" ).click(function() {
+        if ($("#buttonPanel").children().length == 0) functions.sendButtonAction(socket, 'root_action');
+        else functions.sendButtonAction(socket, null);
+    });
 
     $(document).on('click', '.menu-button', function(event) { functions.sendButtonAction(socket, event.target.id); });
 
