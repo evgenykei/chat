@@ -4,7 +4,7 @@ html, body {
 
 #chat-screen {
   height: 100%;
-  padding: 15px;
+  overflow: hidden;
 }
 
 #header-panel {
@@ -24,7 +24,6 @@ html, body {
 
 #conversation {
   background-color: #dee5ef;
-  font-size: 18px;
   overflow: auto;
 }
 
@@ -55,7 +54,6 @@ html, body {
 
 .form-signin .form-control {
  position: relative;
- font-size: 16px;
  height: auto;
  padding: 10px;
  -webkit-box-sizing: border-box;
@@ -89,7 +87,6 @@ html, body {
 .login-title {
   margin-top: 60px;
   color: #555;
-  font-size: 18px;
   font-weight: 400;
   display: block;
 }
@@ -123,12 +120,10 @@ btn:focus,.btn:active {
   box-shadow: none;
 }
 
-.input-group {
-  padding-bottom: 10px;
-}
-
-.btn-space {
-  margin-right: 5px;
+.btn.btn-secondary {
+  font-size: 0.875 rem;
+  white-space:normal !important;
+  word-wrap: break-word; 
 }
 
 .main {
@@ -158,10 +153,6 @@ btn:focus,.btn:active {
   width: 100%;
   border-collapse: separate;
   border-spacing: 1em;
-}
-
-.chart .message {
-  overflow: visible;
 }
 
 .message img {
@@ -207,10 +198,22 @@ btn:focus,.btn:active {
   float: left;
 }
 
-.message.chart  {
-  overflow: auto !important;
-}
-
 .mentioned .message-body {
   background:#ffc8c8;
+}
+
+@media (max-width: @screen-xs) {
+
+  body {
+    font-size: 0.875rem;
+  }
+
+}
+
+@media (max-width: @screen-sm) {
+
+  body {
+    font-size: 0.875rem;
+  }
+
 }

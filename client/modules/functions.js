@@ -119,19 +119,19 @@ module.exports = functions = {
         var inRow = 0;
         buttons.reduce(function(buttons) {
             buttons.slice(0, 3).forEach(function(button, i, arr) {
-                var cell = $("<div class=\"pb-2\">");
+                var cell = $("<div class=\"mt-1 mt-md-2\">");
 
                 if (arr.length !== 1){
-                    if (i == 0) cell.addClass("pr-sm-1")
-                    else if (i == arr.length - 1) cell.addClass("pl-sm-1");
-                    else cell.addClass("pr-sm-1 pl-sm-1");
+                    if (i == 0) cell.addClass("pr-md-1")
+                    else if (i == arr.length - 1) cell.addClass("pl-md-1");
+                    else cell.addClass("pr-md-1 pl-md-1");
                 }
             
-                if (arr.length === 3) cell.addClass("col-sm-4");
-                else if (arr.length === 2) cell.addClass("col-sm-6");
-                else cell.addClass("col-sm-12");
+                if (arr.length === 3) cell.addClass("col-md-4");
+                else if (arr.length === 2) cell.addClass("col-md-6");
+                else cell.addClass("col-md-12");
             
-                $('<button id="' + button.action + '" class="menu-button btn btn-secondary btn-block">' + button.title + '</button>').appendTo(cell);
+                $('<button id="' + button.action + '" class="menu-button btn btn-secondary btn-block h-100">' + button.title + '</button>').appendTo(cell);
                 cell.appendTo(panel);
             });
             return buttons.slice(3);
