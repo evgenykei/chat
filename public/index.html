@@ -3,7 +3,7 @@
 
 <head>
    <title>SAPbot</title>
-   <link rel="stylesheet" href="css/app.css">
+   <link rel="stylesheet" href="styles/app.css">
    
    <meta name="application-name" content="SAPbot" />
    <meta name="author" content="" />
@@ -54,9 +54,17 @@
 
 <body id="main-body">
 
+    <div id="pwa-banner" class="fixed-top shadow p-1 pl-3 pt-2 mb-3" style="display: none;">
+        Add SAPbot to your home screen
+        <button id="pwa-banner-install" class="ml-1 btn btn-secondary">Add</button>
+        <label id="pwa-banner-dismiss" class="btn float-right">
+            <i class="fa fa-times"></i>
+        </label> 
+    </div>
+
     <div id="login-screen" class="container" style="display: none;">
         <div class="row">
-            <div class="col-md-4 offset-md-4">
+            <div class="col-lg-4 offset-lg-4">
                 <div class="account-wall">
                     <img class="profile-img" src="/icons/apple-touch/apple-touch-icon-120x120.png" alt="">
                     <form id="signInForm" class="form-signin">
@@ -116,7 +124,7 @@
     <!--libraries-->
     <script src="/socket.io/socket.io.js"></script>    
     <script src="/siofu/client.js"></script>
-    <script src="/dist.js"></script>
+    <script src="/scripts/dist.js"></script>
 </body>
 
 </html>

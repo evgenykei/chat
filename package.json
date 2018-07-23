@@ -25,9 +25,9 @@
     "underscore": "^1.9.1"
   },
   "scripts": {
-    "build": "browserify client/index.js -d -p [minifyify --no-map] > public/dist.js",
-    "build-dev": "browserify client/index.js -o public/dist.js --debug",
-    "watch": "watchify client/index.js -o public/dist.js --debug",
+    "build": "browserify client/index.js -d -p [minifyify --no-map] > public/scripts/dist.js",
+    "build-dev": "browserify client/index.js -o public/scripts/dist.js --debug",
+    "watch": "watchify client/index.js -o public/scripts/dist.js --debug",
     "start": "yarn run build & node index",
     "start-dev": "yarn run build-dev & node index"
   },

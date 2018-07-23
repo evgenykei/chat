@@ -115,6 +115,11 @@ html, body {
  *
  */
 
+#pwa-banner {
+  font-size: 0.75rem;
+  background-color: white;
+}
+
 btn:focus,.btn:active {
   outline: none !important;
   box-shadow: none;

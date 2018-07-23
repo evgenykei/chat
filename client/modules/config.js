@@ -10,6 +10,8 @@ module.exports = config = {
     customMode: 0,
     missedNotifications: 0,
 
+    installPWAEvent: null,
+
     notify: new Audio('sounds/notify.wav'),
 
     isMobile: false

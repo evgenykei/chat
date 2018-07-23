@@ -16,6 +16,16 @@ module.exports = function(socket) {
 
     /* 
      *
+     * PWA banner events
+     * 
+     */
+
+    $("#pwa-banner-install" ).click(function() { functions.pwaInstall(); });
+
+    $("#pwa-banner-dismiss" ).click(function() { $("#pwa-banner").hide(); });
+
+    /* 
+     *
      * Chat window events
      * 
      */
