@@ -37,9 +37,11 @@ module.exports = function(socket) {
 
     $(document).on('click', '.menu-button', function(event) { functions.sendButtonAction(socket, event.target.id); });
 
+    $(document).on('click', '.file-download', function(event) { functions.downloadFile(socket, event.target.id); });
+
     $("#chatForm").submit(function() { functions.sendChatMessage(socket); });
 
-    $("#logout" ).click(function() { functions.logout(); });
+    $("#logout" ).click(function() { functions.logout(); });    
 
     /* 
      *

@@ -1,4 +1,4 @@
-const config = require('config'),
+const config   = require('config'),
       cryptojs = require('crypto-js');
 
 const buttonActions = require('../menu');
@@ -17,6 +17,12 @@ module.exports = function (socket, next) {
     socket_intervals[socket.id] = {};
     socket_timeouts[socket.id] = {};
 
+    /*
+     *
+     * get set extensions
+     * 
+     */
+
     socket.get = function (key) {
        return socket_data[socket.id][key];
     };
@@ -24,6 +30,12 @@ module.exports = function (socket, next) {
     socket.set = function (key, value) {
        socket_data[socket.id][key] = value;
     };
+
+    /*
+     *
+     * timers extensions
+     * 
+     */
 
     socket.setInterval = function(key, func, interval, life) {
         socket.clearInterval(key);
@@ -54,15 +66,11 @@ module.exports = function (socket, next) {
         return socket_timeouts[socket.id][key] - Math.floor(Date.now() / 1000);
     };
 
-    socket.destroy = function() {
-        for (let interval in socket_intervals[socket.id])
-            socket.clearInterval(interval);
-
-            
-        delete socket_data[socket.id];
-        delete socket_intervals[socket.id];
-        delete socket_timeouts[socket.id];
-    };
+    /*
+     *
+     * auth extensions
+     * 
+     */
 
     socket.auth = function(phone, code) {
         socket.set('phone', phone);
@@ -74,15 +82,59 @@ module.exports = function (socket, next) {
         return socket.get('password') !== undefined;
     };
 
+    socket.destroy = function() {
+        for (let interval in socket_intervals[socket.id])
+            socket.clearInterval(interval);
+            
+        delete socket_data[socket.id];
+        delete socket_intervals[socket.id];
+        delete socket_timeouts[socket.id];
+    };
+
+    /*
+     *
+     * encrypted messaging extensions
+     * 
+     */
+
+    socket.encrypt = function(data) {
+        try {
+            return cryptojs.Rabbit.encrypt(data, socket.get('password')).toString();
+        }
+        catch (err) {
+            console.log("Error during encryption: " + err);
+            return null;
+        }
+    };
+
+    socket.decrypt = function(encrypted) {
+        try {
+            return cryptojs.Rabbit.decrypt(encrypted, socket.get('password')).toString(cryptojs.enc.Utf8);
+        }
+        catch (err) {
+            console.log("Error during decryption: " + err);
+            return null;
+        } 
+    };
+
     socket.sendChatData = function(data) {
         if (!data.value) data.value = "";
-
-        if (data.type === 'menu' || data.type === 'chart') data.value = JSON.stringify(data.value);
         if (!data.from) data.from = 'Server';
 
-        data.value = cryptojs.Rabbit.encrypt(data.value.toString(), socket.get('password')).toString();
-        socket.emit('chat', data);
+        let encrypted = socket.encrypt(JSON.stringify(data));
+        if (encrypted) socket.emit('chat', encrypted);
     };
+
+    socket.sendChatMessage = function(text) {
+        if (!text) return;
+        socket.sendChatData({ type: 'text', value: text });
+    };
+
+    /*
+     *
+     * session extensions
+     * 
+     */
 
     socket.saveSession = function() {
         let phone = socket.get('phone');

@@ -105,15 +105,18 @@ module.exports = {
 
     //2.3. Заявка на отпуск
     request_vacation: async (socket) => ({
-        type: 'text',
-        value: await readFileAsync('./server/files/request_vacation.txt', 'utf8')
+        type: 'file',
+        value: 'test.txt'
     }),    
 
     //3. Обращение в службу поддержки
-    contact_support: async (socket) => ({
-        type: 'text',
-        value: await readFileAsync('./server/files/contact_support.txt', 'utf8')
-    }),  
+    contact_support: async (socket) => {
+        socket.setTimeout('uploadTill', timeForUploading);
+        return {
+            type: 'upload',
+            value: timeForUploading
+        };
+    },  
 
     /*//Uploading example
     button3_3_action: async function(socket) {

@@ -118,6 +118,16 @@ module.exports = functions = {
 
     /* 
      *
+     * Print chat status message
+     * 
+     */
+
+    printChatStatus: function(text) {
+        functions.printText("<div class=\"status-message\">" + text + "</div>");
+    },
+
+    /* 
+     *
      * Print connection status at auth window
      * 
      */
@@ -209,15 +219,24 @@ module.exports = functions = {
         });
     },
 
+    /*
+     *
+     * Encrypt string using password
+     * 
+     */
+
+    encrypt: function(data) {
+        return Rabbit.encrypt(data, config.password).toString();
+    },
+
     /* 
      *
      * Decrypt string using password
      * 
      */
 
-    decryptOrFail: function(str, password) {
-        var encoded = Rabbit.decrypt(str, password);
-        return encoded.toString(Utf8);
+    decrypt: function(str) {
+        return Rabbit.decrypt(str, config.password).toString(Utf8);
     },
 
     /* 
@@ -320,7 +339,7 @@ module.exports = functions = {
     sendButtonAction: function(socket, action) {
         $("#buttonPanel").empty();
         $("#showMenu").removeClass("active");
-        if (action) socket.emit('buttonAction', action);
+        if (action) socket.emit('buttonAction', functions.encrypt(action));
     },
 
     sendChatMessage: function(socket) {
@@ -328,14 +347,17 @@ module.exports = functions = {
         var encrypted = null;
 
         if (msg !== "") {
-            encrypted = Rabbit.encrypt(msg, config.password);
-            socket.emit("textSend", encrypted.toString());
+            socket.emit('textSend', functions.encrypt(msg));
         }
 
         $("#msg").val("");
 
         //if they're mobile, close the keyboard
         if (config.isMobile) $("#msg").blur();
+    },
+
+    downloadFile: function (socket, filename) {
+        socket.emit('downloadFile', functions.encrypt(filename));
     },
 
     notificationCheck: function() {

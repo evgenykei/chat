@@ -1,11 +1,12 @@
 module.exports = function() {
 
-    const Utf8      = require('crypto-js/enc-utf8'),
-          Base64    = require('crypto-js/enc-base64'),
-          SHA1      = require('crypto-js/sha1');
+    const Utf8       = require('crypto-js/enc-utf8'),
+          Base64     = require('crypto-js/enc-base64'),
+          SHA1       = require('crypto-js/sha1'),
+          downloadjs = require("downloadjs");
 
-    const functions = require('./functions'),
-          config    = require('./config');
+    const functions  = require('./functions'),
+          config     = require('./config');
 
     
     const socket = io.connect();
@@ -41,7 +42,7 @@ module.exports = function() {
     uploader.listenOnInput(document.getElementById("file-select"));
 
     uploader.addEventListener("start", function(data){
-        functions.printText("<div class=\"status-message\">Uploading file... Please wait.</div>");
+        functions.printChatStatus("Uploading file... Please wait.");
     });
 
 
@@ -105,47 +106,80 @@ module.exports = function() {
      * 
      */
 
-    socket.on("chat", function (payload) {
-        var msg;
+    socket.on("chat", function (data) {
+        var type, msg, from;
         try {
-            msg = functions.decryptOrFail(payload.value, config.password);
+            var decrypted = JSON.parse(functions.decrypt(data));
+            type = decrypted.type;
+            msg = decrypted.value;
+            from = decrypted.from;
         }
         catch (err) {
-            payload.type = 'text';
-            msg = "Unable to decrypt: " + payload.value;
+            type = 'text';
+            msg = "Unable to decrypt: " + data;
+            from = "Server";
         }
 
         //regex to match URLS
         var matchPattern = /(\b(((https?|ftp):\/\/)|magnet:)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
 
-        if (payload.type === 'text') {
+        if (type === 'text') {
             msg = functions.sanitizeToHTMLSafe(msg).replace(matchPattern, '<a href="$1" target="_blank">$1</a>');
-            functions.postChat(payload.type, msg, payload.from);
+            functions.postChat(type, msg, from);
         }
 
         /*
-        else if (payload.type === 'image') {
+        else if (type === 'image') {
             if ($('#config-receive-imgs').is(':checked'))
                 msgCore = "<img src=\"" + msg + "\"><span class=\"img-download-link\" style=\"display: none;\"><br /><a target=\"_blank\" href=\"" + msg + "\">View/Download Image</a>";
             else 
                 msgCore = "<span class=\"text-danger\">Image blocked by configuration</span>";
         }*/
 
-        else if (payload.type === 'menu') {
-            functions.buildMenu(JSON.parse(msg));
+        else if (type === 'menu') {
+            functions.buildMenu(msg);
         }
 
-        else if (payload.type === 'chart') {
+        else if (type === 'chart') {
             var canvasId = "message-" + config.messageCount + "-canvas";
-            functions.postChat(payload.type, "<canvas id=\"" + canvasId + "\" width=\"auto\" height=\"auto\"></canvas>", payload.from);
+            functions.postChat(type, "<canvas id=\"" + canvasId + "\" width=\"auto\" height=\"auto\"></canvas>", from);
             functions.buildChart(canvasId);
         }
 
-        else if (payload.type === 'upload') {
-            functions.postChat(payload.type, 'Server requests file(s) to upload. You have ' + msg + ' seconds.', payload.from);
+        else if (type === 'file') {
+            functions.postChat(type, 
+                "<div id=" + msg + " class=\"btn file-download\"> \
+                    <span class=\"mr-2 fa-stack fa\"> \
+                        <i class=\"far fa-circle fa-stack-2x\"></i> \
+                        <i class=\"fa fa-arrow-down fa-stack-1x\"></i> \
+                    </span> \
+                    " + msg + " \
+                </div>" 
+            , from);
+        }
+
+        else if (type === 'upload') {
+            functions.postChat(type, 'Server requests file(s) to upload. You have ' + msg + ' seconds.', from);
         }
         
     });
+
+    /* 
+     *
+     * File operations
+     * 
+     */
+
+    socket.on('downloadFile', function(data) {
+        try {
+            data = JSON.parse(functions.decrypt(data));
+            if (!data.base64 || !data.filename || !data.mimeType) throw "Wrong payload";
+            downloadjs(data.base64, data.filename, data.mimeType);
+        }
+        catch (err) {
+            functions.printChatStatus("An error occured during decrypting file.");
+        }        
+    })
 
     /* 
      *

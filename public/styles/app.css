@@ -120,6 +120,14 @@ html, body {
   background-color: white;
 }
 
+.file-download {
+  display: table; 
+}
+
+.file-download span {
+  pointer-events:none;
+}
+
 btn:focus,.btn:active {
   outline: none !important;
   box-shadow: none;

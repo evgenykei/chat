@@ -3,7 +3,7 @@ const config         = require('config'),
       superagent     = require('superagent');
       
 const smsAuth       = require('../smsRuAuth'),
-      uploader      = require('./uploader'),
+      fileModule    = require('./fileModule'),
       buttonActions = require('../menu');
 
 const callConfirmationCheckInterval = config.get('Timers.callConfirmationCheckInterval'),
@@ -12,10 +12,10 @@ const callConfirmationCheckInterval = config.get('Timers.callConfirmationCheckIn
       configMessages                = config.get('Messages');
 
 function onConnection(socket) {
-    uploader.initialize(socket);
+    fileModule.initialize(socket);
 
     //Verify phone number
-    socket.on('verifyReq', async function onVerification(phone, type) {
+    socket.on('verifyReq', async function(phone, type) {
         if (socket.isAuth()) return;
     
         //Delay for verification
@@ -64,7 +64,7 @@ function onConnection(socket) {
     });
 
     //Authenticate user using code
-    socket.on('joinReq', async function onJoin(code) {
+    socket.on('joinReq', async function(code) {
         if (socket.isAuth()) return;
     
         var phone = socket.get('phone');
@@ -84,23 +84,20 @@ function onConnection(socket) {
     }); 
 
     //Emit chat message
-    socket.on('textSend', function onTextSend(msg) {
+    socket.on('textSend', function(msg) {
         if (!socket.isAuth()) return;
     
-        socket.emit('chat', { type: 'text', value: msg, from: socket.get('phone') });
-    });
-
-    //Emit user typing state
-    socket.on('typing', function onTyping(isTyping) {
-        if (!socket.isAuth()) return;
-    
-        socket.emit('typing', { isTyping: isTyping, from: socket.get('phone') });
+        let decrypted = socket.decrypt(msg);
+        if (decrypted) socket.sendChatData({ type: 'text', value: decrypted, from: socket.get('phone') });
     });
 
     //Execute button action
-    socket.on('buttonAction', async function onButtonAction(buttonAction) {
+    socket.on('buttonAction', async function(buttonAction) {
         if (!socket.isAuth()) return;
-    
+
+        buttonAction = socket.decrypt(buttonAction);
+        if (!buttonAction || !buttonActions[buttonAction]) return;
+
         let result = await buttonActions[buttonAction](socket);
         if (result) socket.sendChatData(result);
     });
@@ -109,7 +106,7 @@ function onConnection(socket) {
     socket.on('restoreSession', socket.restoreSession);
 
     //Save session and destroy socket object
-    socket.on('disconnect', function onDisconnect() {
+    socket.on('disconnect', function() {
         socket.saveSession();
         socket.destroy();
     });
