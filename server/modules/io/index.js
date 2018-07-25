@@ -2,9 +2,10 @@ const config         = require('config'),
       validatePhone  = require('libphonenumber-js');
       superagent     = require('superagent');
       
-const smsAuth       = require('../smsRuAuth'),
-      fileModule    = require('./fileModule'),
-      buttonActions = require('../menu');
+const smsAuth        = require('../smsRuAuth'),
+      fileModule     = require('./fileModule'),
+      buttonActions  = require('../menu'),
+      classifier     = require('../classifier');
 
 const callConfirmationCheckInterval = config.get('Timers.callConfirmationCheckInterval'),
       callConfirmationTimeout       = config.get('Timers.callConfirmationTimeout'),
@@ -38,7 +39,7 @@ function onConnection(socket) {
                 
         //Auth using SMS
         if (type === 'sms') {            
-            if (smsAuth.sendSMSCode(phone, code)){ 
+            if (smsAuth.sendSMSCode(phone, code)) {
                 socket.emit('verifyConfirm', 'Verification sms was sent', type, phone, null);
                 socket.setTimeout('verificationDelay', verificationDelay);
             }
@@ -88,7 +89,10 @@ function onConnection(socket) {
         if (!socket.isAuth()) return;
     
         let decrypted = socket.decrypt(msg);
-        if (decrypted) socket.sendChatData({ type: 'text', value: decrypted, from: socket.get('phone') });
+        if (decrypted) { 
+            socket.sendChatData({ type: 'text', value: decrypted, from: socket.get('phone') });
+            socket.sendChatData({ type: 'text', value: 'Message class: ' + classifier.classify(decrypted) })
+        }
     });
 
     //Execute button action
@@ -112,9 +116,11 @@ function onConnection(socket) {
     });
 }
 
-module.exports.initialize = function(server) {
+module.exports.initialize = async function(server) {
+    //Initializing related modules
+    await classifier.initialize();
+
     let io = require('socket.io').listen(server);
     io.use(require('./functionsMiddleware'));
-
     io.sockets.on('connection', onConnection);
 }
