@@ -3,7 +3,7 @@ module.exports = function() {
     const Utf8       = require('crypto-js/enc-utf8'),
           Base64     = require('crypto-js/enc-base64'),
           SHA1       = require('crypto-js/sha1'),
-          downloadjs = require("downloadjs");
+          downloadjs = require("../lib/download");
 
     const functions  = require('./functions'),
           config     = require('./config');
