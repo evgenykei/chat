@@ -2,54 +2,62 @@
 <html lang="en">
 
 <head>
-   <title>SAPbot</title>
-   <link rel="stylesheet" href="styles/app.css">
-   
-   <meta name="application-name" content="SAPbot" />
-   <meta name="author" content="" />
-   <meta name="robots" content="All" />
-   <meta name="description" content="SAPbot" />
-   <meta name="keywords" content="" />
-   <meta name="rating" content="General" />
-   <meta name="dcterms.contributor" content="" />
-   <meta name="dcterms.creator" content="" />
-   <meta name="dcterms.publisher" content="" />
-   <meta name="dcterms.description" content="SAPbot" />
-   <meta name="dcterms.rights" content="2018" />
-   <meta property="og:type" content="website" />
-   <meta property="og:title" content="Home" />
-   <meta property="og:description" content="SAPbot" />
-   <meta property="twitter:title" content="Home" />
-   <meta property="twitter:description" content="SAPbot" />
+    <title>SAPbot</title>
+    <link rel="stylesheet" href="styles/app.css">
+    
+    <meta name="application-name" content="SAPbot" />
+    <meta name="author" content="" />
+    <meta name="robots" content="All" />
+    <meta name="description" content="SAPbot" />
+    <meta name="keywords" content="" />
+    <meta name="rating" content="General" />
+    <meta name="dcterms.contributor" content="" />
+    <meta name="dcterms.creator" content="" />
+    <meta name="dcterms.publisher" content="" />
+    <meta name="dcterms.description" content="SAPbot" />
+    <meta name="dcterms.rights" content="2018" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Home" />
+    <meta property="og:description" content="SAPbot" />
+    <meta property="twitter:title" content="Home" />
+    <meta property="twitter:description" content="SAPbot" />
 
-   <noscript>This app required javascript for work</noscript>
+    <noscript>This app required javascript for work</noscript>
 
-   
-   <meta charset="UTF-8">
+    
+    <meta charset="UTF-8">
 
-   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-   <meta name="theme-color" content="#FFFFFF"/>
-   <meta name="apple-mobile-web-app-capable" content="yes" />
-   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-   <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon" />
-   <link rel="manifest" href="/manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#FFFFFF"/>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon" />
+    <link rel="manifest" href="/manifest.json">
 
-   <!-- Apple Touch Icons -->
-   <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-touch/apple-touch-icon-57x57.png" />   
-   <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-touch/apple-touch-icon-60x60.png" />
-   <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-touch/apple-touch-icon-72x72.png" />   
-   <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch/apple-touch-icon-76x76.png" />
-   <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-touch/apple-touch-icon-114x114.png" />   
-   <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch/apple-touch-icon-120x120.png" />
-   <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-touch/apple-touch-icon-144x144.png" />
-   <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch/apple-touch-icon-152x152.png" />   
-   <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch/apple-touch-icon-180x180.png" />
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-touch/apple-touch-icon-57x57.png" />   
+    <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-touch/apple-touch-icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-touch/apple-touch-icon-72x72.png" />   
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch/apple-touch-icon-76x76.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-touch/apple-touch-icon-114x114.png" />   
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-touch/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch/apple-touch-icon-152x152.png" />   
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch/apple-touch-icon-180x180.png" />
 
-   <!-- Windows 8 Tile Icons -->
-   <meta name="msapplication-square70x70logo" content="/icons/mstile/mstile-70x70.png" />
-   <meta name="msapplication-square150x150logo" content="/icons/mstile/mstile-150x150.png" />
-   <meta name="msapplication-wide310x150logo" content="/icons/mstile/mstile-310x150.png" />
-   <meta name="msapplication-square310x310logo" content="/icons/mstile/mstile-310x310.png" />
+    <!-- iOS PWA splash screen fix -->
+    <link rel="apple-touch-startup-image" href="icons/splash/launch-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="icons/splash/launch-750x1294.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="icons/splash/launch-1242x2148.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="icons/splash/launch-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="icons/splash/launch-1536x2048.png" media="(min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="icons/splash/launch-1668x2224.png" media="(min-device-width: 834px) and (max-device-width: 834px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="icons/splash/launch-2048x2732.png" media="(min-device-width: 1024px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)">
+    <!-- Windows 8 Tile Icons -->
+    <meta name="msapplication-square70x70logo" content="/icons/mstile/mstile-70x70.png" />
+    <meta name="msapplication-square150x150logo" content="/icons/mstile/mstile-150x150.png" />
+    <meta name="msapplication-wide310x150logo" content="/icons/mstile/mstile-310x150.png" />
+    <meta name="msapplication-square310x310logo" content="/icons/mstile/mstile-310x310.png" />
 </head>
 
 <body id="main-body">
