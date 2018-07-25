@@ -80,6 +80,7 @@ module.exports = functions = {
     load: async () => {
         try {
             classifier = natural.BayesClassifier.restore(JSON.parse(await readFileAsync(classifierPersistedPath)));
+            classifier.stemmer = PorterStemmerRu;
             return true;
         }
         catch (err) {
