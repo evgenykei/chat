@@ -101,7 +101,7 @@
   },
   {
     "class": "Приветствие",
-    "text": "здарова",
-    "checked": false
+    "text": "здаров",
+    "checked": true
   }
 ]

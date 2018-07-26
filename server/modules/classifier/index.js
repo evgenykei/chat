@@ -1,16 +1,19 @@
 const fs              = require('fs'),
       util            = require('util'),
       path            = require('path'),
+      http           = require('http'),
+      express         = require('express'),
+      serveStatic     = require('serve-static'),
+      bodyParser      = require('body-parser'),
       natural         = require('natural'),
       PorterStemmerRu = require.main.require('./node_modules/natural/lib/natural/stemmers/porter_stemmer_ru');
 
 const fileExistsAsync         = util.promisify(fs.exists),
       writeFileAsync          = util.promisify(fs.writeFile),
       readFileAsync           = util.promisify(fs.readFile);
-    
 
-const trainingDataPath        = path.join(__dirname, '/training.json'),
-      classifierPersistedPath = path.join(__dirname, '/classifier.json');
+const trainingDataPath        = path.join(__dirname, 'training.json'),
+      classifierPersistedPath = path.join(__dirname, 'classifier.json');
 
 var classifier = new natural.BayesClassifier(PorterStemmerRu);
 var knownTexts  = [];
@@ -113,3 +116,35 @@ module.exports = functions = {
     }
 
 }
+
+/***
+*
+* Web interface
+*
+***/ 
+var interface = express();
+
+interface.use(serveStatic(__dirname + '/interface'));
+interface.use(bodyParser.json());
+
+interface.get('/trainingData', async function(req, res) {
+    if (await fileExistsAsync(trainingDataPath))
+        res.sendFile(trainingDataPath);
+    else res.send([]);
+});
+
+interface.post('/trainingData', async function(req, res) {
+    try {
+        await writeFileAsync(trainingDataPath, JSON.stringify(req.body, null, 2));
+        res.sendStatus(200);
+    }
+    catch (err) {
+        res.sendStatus(500);
+        console.log(err);
+    }
+})
+
+var interfaceServer = http.createServer(interface);
+interfaceServer.listen(process.env.TRAINER_WEB_INTERFACE_PORT || 3002, function() {
+    console.log('Classifier training web interface listening on localhost:' + interfaceServer.address().port);
+});

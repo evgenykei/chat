@@ -59,7 +59,7 @@ async function initialize() {
     await ioModule.initialize(server);
 
     server.listen(process.env.PORT || 3000, function () {
-        console.log('Express server listening on port ' + server.address().port);
+        console.log('SAPbot app listening on port ' + server.address().port);
     });
 
 }
