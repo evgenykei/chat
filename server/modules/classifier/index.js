@@ -84,6 +84,7 @@ module.exports = functions = {
             let trainingData = JSON.parse(await readFileAsync(trainingDataPath));
             trainingData.push({ class: className, text: text, checked: false });
             await writeFileAsync(trainingDataPath, JSON.stringify(trainingData, null, 2));
+            knownTexts.push(text);
             return true;
         }
         catch (err) {
