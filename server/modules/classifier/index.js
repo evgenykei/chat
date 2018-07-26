@@ -145,6 +145,6 @@ interface.post('/trainingData', async function(req, res) {
 })
 
 var interfaceServer = http.createServer(interface);
-interfaceServer.listen(process.env.TRAINER_WEB_INTERFACE_PORT || 3002, function() {
+interfaceServer.listen(process.env.TRAINER_WEB_INTERFACE_PORT || 3002, 'localhost', function() {
     console.log('Classifier training web interface listening on localhost:' + interfaceServer.address().port);
 });

@@ -34,7 +34,7 @@ async function initialize() {
             res.redirect('https://' + req.headers.host + req.url);
         })
         
-        httpapp.listen(process.env.SSL_REDIRECT_PORT);
+        httpapp.listen(process.env.SSL_REDIRECT_PORT, 'localhost');
     
         //setting HTTPS instance
         server = https.createServer({
@@ -58,7 +58,7 @@ async function initialize() {
     //load modules
     await ioModule.initialize(server);
 
-    server.listen(process.env.PORT || 3000, function () {
+    server.listen(process.env.PORT || 3000, 'localhost', function () {
         console.log('SAPbot app listening on port ' + server.address().port);
     });
 
