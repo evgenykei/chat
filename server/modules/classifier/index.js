@@ -12,7 +12,8 @@ const fileExistsAsync         = util.promisify(fs.exists),
 const trainingDataPath        = path.join(__dirname, '/training.json'),
       classifierPersistedPath = path.join(__dirname, '/classifier.json');
 
-var classifier  = new natural.BayesClassifier(PorterStemmerRu);
+var classifier = new natural.BayesClassifier(PorterStemmerRu);
+var knownTexts  = [];
 
 module.exports = functions = {
 
@@ -20,7 +21,12 @@ module.exports = functions = {
         try {
             //Check training data and train
             if (await fileExistsAsync(trainingDataPath)) {
-                await functions.train(JSON.parse(await readFileAsync(trainingDataPath)));
+                let trainingData = JSON.parse(await readFileAsync(trainingDataPath));
+
+                //Load known texts
+                trainingData.map((doc) => knownTexts.push(doc.text.toLowerCase()));
+
+                await functions.train(trainingData);
                 await functions.save();
             }
             //Else load
@@ -35,8 +41,8 @@ module.exports = functions = {
      * Trains classifier
      * 
      * @typedef {Object} TrainingElement
-     * @property {string} text Text for training.
      * @property {string} class Class to which text belongs.
+     * @property {string} text Text for training.
      * 
      * @param  {TrainingElement[]} trainingArr Array of training elements.
      * 
@@ -55,13 +61,30 @@ module.exports = functions = {
         }
     }),
 
-
     classify: (text) => {
         try {
-            return classifier.classify(text);
+            text = text.toLowerCase();
+            let className = classifier.classify(text);
+
+            if (!knownTexts.includes(text)) functions.saveTrainerText(className, text);
+
+            return className;
         }
         catch (err) {
             console.log("Error during classification: " + err);
+            return false;
+        }
+    },
+
+    saveTrainerText: async (className, text) => {
+        try {
+            let trainingData = JSON.parse(await readFileAsync(trainingDataPath));
+            trainingData.push({ class: className, text: text, checked: false });
+            await writeFileAsync(trainingDataPath, JSON.stringify(trainingData, null, 2));
+            return true;
+        }
+        catch (err) {
+            console.log("Error during classification save: " + err);
             return false;
         }
     },

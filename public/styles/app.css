@@ -22,15 +22,6 @@ html, body {
   background-color: #ecf1f5;
 }
 
-#conversation {
-  background-color: #dee5ef;
-  overflow: auto;
-}
-
-#msgs {
-  padding-bottom: 15px;
-}
-
 #chatForm {
   /* Freaking firefox... */
   width: -moz-available;
@@ -161,11 +152,22 @@ btn:focus,.btn:active {
  * General message classes
  */
 
-.message {
-  display: table;
+#conversation {
+  background-color: #dee5ef;
+  overflow: auto;
+}
+
+#msgs {
   width: 100%;
+  padding: 0.5em;
+  display: table;
   border-collapse: separate;
-  border-spacing: 1em;
+  border-spacing: 0.2em;
+}
+
+.message {
+  display: table-row;
+  width: 100%;
 }
 
 .message img {
@@ -200,6 +202,13 @@ btn:focus,.btn:active {
  * Per-person customization
  */ 
 
+.my-message .message-avatar {
+  padding-left: 1em;
+}
+
+.their-message .message-avatar {
+  padding-right: 1em;
+}
 
 .my-message .message-body {
   background:#f2f5fa;  
