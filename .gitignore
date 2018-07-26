@@ -1,4 +1,5 @@
 .env
 node_modules/
-components/
+server/modules/classifier/classifer.json
+server/modules/classifier/training.json
 public/scripts/dist.js
