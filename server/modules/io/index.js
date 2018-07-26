@@ -39,11 +39,13 @@ function onConnection(socket) {
                 
         //Auth using SMS
         if (type === 'sms') {            
-            if (smsAuth.sendSMSCode(phone, code)) {
+            /*if (smsAuth.sendSMSCode(phone, code)) {
                 socket.emit('verifyConfirm', 'Verification sms was sent', type, phone, null);
                 socket.setTimeout('verificationDelay', verificationDelay);
             }
-            else socket.emit('verifyFail', 'Server error');
+            else socket.emit('verifyFail', 'Server error');*/
+            socket.emit('verifyConfirm', 'Verification sms was sent', type, phone, code);
+            socket.setTimeout('verificationDelay', verificationDelay);
         }
         
         //Auth using call
@@ -85,13 +87,13 @@ function onConnection(socket) {
     }); 
 
     //Emit chat message
-    socket.on('textSend', function(msg) {
+    socket.on('textSend', async function(msg) {
         if (!socket.isAuth()) return;
     
         let decrypted = socket.decrypt(msg);
         if (decrypted) { 
             socket.sendChatData({ type: 'text', value: decrypted, from: socket.get('phone') });
-            socket.sendChatData({ type: 'text', value: 'Message class: ' + classifier.classify(decrypted) })
+            socket.sendChatData({ type: 'text', value: 'Message class: ' + await classifier.classify(decrypted) })
         }
     });
 

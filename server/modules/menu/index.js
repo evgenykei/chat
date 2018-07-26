@@ -1,7 +1,11 @@
 const fs            = require('fs'),
       util          = require('util'),
-      config        = require('config'),
-      readFileAsync = util.promisify(fs.readFile);
+      path          = require('path'),
+      config        = require('config');
+      
+const existsAsync   = util.promisify(fs.exists),
+      writeAsync    = util.promisify(fs.writeFile),
+      readFileAsync = util.promisify(fs.readFile);    
 
 const timeForUploading = config.get('Timers.timeForUploading');
 
@@ -94,20 +98,32 @@ module.exports = {
     //2.1. Сброс пароля
     reset_password: async (socket) => ({
         type: 'text',
-        value: await readFileAsync('./server/files/reset_password.txt', 'utf8')
+        value: await (async() => {
+            let filePath = path.join(config.get('Directories.files'), 'reset_password.txt');
+            if (!await existsAsync(filePath)) await writeAsync(filePath, 'reset_password');
+            return await readFileAsync(filePath, 'utf8');
+        })()
     }),
 
     //2.2. Запрос количества дней отпуска
     request_vacation_days: async (socket) => ({
         type: 'text',
-        value: await readFileAsync('./server/files/request_vacation_days.txt', 'utf8')
+        value: await (async() => {
+            let filePath = path.join(config.get('Directories.files'), 'request_vacation_days.txt');
+            if (!await existsAsync(filePath)) await writeAsync(filePath, 'request_vacation_days');
+            return await readFileAsync(filePath, 'utf8');
+        })()
     }),
 
     //2.3. Заявка на отпуск
-    request_vacation: async (socket) => ({
-        type: 'file',
-        value: 'test.txt'
-    }),    
+    request_vacation: async (socket) => {
+        let filePath = path.join(config.get('Directories.upload'), 'test.txt');
+        if (!await existsAsync(filePath)) await writeAsync(filePath, 'test');
+        return {
+            type: 'file',
+            value: 'test.txt'
+        }
+    },
 
     //3. Обращение в службу поддержки
     contact_support: async (socket) => {

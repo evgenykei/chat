@@ -1,5 +1,6 @@
 const config         = require('config'),
       fs             = require('fs'),
+      util           = require('util'),
       express        = require('express'),
       http           = require('http'),
       https          = require('https'),      
@@ -8,6 +9,9 @@ const config         = require('config'),
       bodyParser     = require('body-parser'),
       methodOverride = require('method-override');
       siofu          = require('socketio-file-upload');
+
+const existsAsync   = util.promisify(fs.exists),
+      mkdirAsync    = util.promisify(fs.mkdir);
 
 //Loading environment variables
 require('dotenv').config()
@@ -54,6 +58,13 @@ async function initialize() {
     app.use(serveStatic(__dirname + '/public'));
     app.use('/webfonts', serveStatic(__dirname + '/node_modules/@fortawesome/fontawesome-free/webfonts'));
     app.use(siofu.router);
+
+    //create missing folders
+    let directories = config.get('Directories');
+    for (directory in directories) {
+        if (!await existsAsync(directories[directory]))
+            await mkdirAsync(directories[directory]);
+    }
 
     //load modules
     await ioModule.initialize(server);

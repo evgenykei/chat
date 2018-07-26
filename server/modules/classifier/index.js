@@ -33,7 +33,8 @@ module.exports = functions = {
                 await functions.save();
             }
             //Else load
-            else await functions.load();
+            else if (await fileExistsAsync(classifierPersistedPath)) 
+                await functions.load();
         }
         catch (err) {
             console.log("Error during classifier initialization: " + err);
@@ -64,12 +65,12 @@ module.exports = functions = {
         }
     }),
 
-    classify: (text) => {
+    classify: async (text) => {
+        let className;
         try {
             text = text.toLowerCase();
-            let className = classifier.classify(text);
 
-            if (!knownTexts.includes(text)) functions.saveTrainerText(className, text);
+            className = classifier.classify(text);
 
             return className;
         }
@@ -77,11 +78,20 @@ module.exports = functions = {
             console.log("Error during classification: " + err);
             return false;
         }
+        finally {
+            if (!className) className = 'unknown';
+            if (!knownTexts.includes(text)) 
+                await functions.saveTrainerText(className, text);
+        }
     },
 
     saveTrainerText: async (className, text) => {
         try {
-            let trainingData = JSON.parse(await readFileAsync(trainingDataPath));
+            let trainingData;
+            if (await fileExistsAsync(trainingDataPath))
+                trainingData = JSON.parse(await readFileAsync(trainingDataPath));
+            else trainingData = [];
+
             trainingData.push({ class: className, text: text, checked: false });
             await writeFileAsync(trainingDataPath, JSON.stringify(trainingData, null, 2));
             knownTexts.push(text);

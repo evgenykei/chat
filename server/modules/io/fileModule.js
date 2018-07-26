@@ -1,15 +1,16 @@
-const fs    = require('fs'),
-      util  = require('util'),
-      path  = require('path'),
-      mime  = require('mime-types'),
-      siofu = require('socketio-file-upload');
+const fs     = require('fs'),
+      util   = require('util'),
+      path   = require('path'),
+      config = require('config'),
+      mime   = require('mime-types'),
+      siofu  = require('socketio-file-upload');
 
 const existsAsync   = util.promisify(fs.exists),
       readFileAsync = util.promisify(fs.readFile);      
 
 function initialize(socket) {
 
-    const fileDir = './server/upload';
+    const fileDir = config.get('Directories.upload');
 
     /*
      *

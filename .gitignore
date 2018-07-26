@@ -1,6 +1,6 @@
 .env
 node_modules/
-server/modules/classifier/classifer.json
+server/modules/classifier/classifier.json
 server/modules/classifier/training.json
 server/files
 server/upload

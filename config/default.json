@@ -14,6 +14,11 @@
         "timeForUploading": 60
     },
 
+    "Directories": {
+        "files": "./server/files",
+        "upload": "./server/upload"
+    },
+
     "Messages": {
         "welcome": "Добро пожаловать в чат компании. Выберите один из пунктов меню."
     }

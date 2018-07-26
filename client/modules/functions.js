@@ -123,7 +123,13 @@ module.exports = functions = {
      */
 
     printChatStatus: function(text) {
-        functions.printText("<div class=\"status-message\">" + text + "</div>");
+        functions.printText(
+            "<div class=\"message\"> \
+                <div class=\"empty-column\"> \
+                </div><div class=\"status-message\">"  + text + "</div> \
+                <div class=\"empty-column\"></div> \
+            </div>"
+        );
     },
 
     /* 
