@@ -39,13 +39,11 @@ function onConnection(socket) {
                 
         //Auth using SMS
         if (type === 'sms') {            
-            /*if (smsAuth.sendSMSCode(phone, code)) {
+            if (smsAuth.sendSMSCode(phone, code)) {
                 socket.emit('verifyConfirm', 'Verification sms was sent', type, phone, null);
                 socket.setTimeout('verificationDelay', verificationDelay);
             }
-            else socket.emit('verifyFail', 'Server error');*/
-            socket.emit('verifyConfirm', 'Verification sms was sent', type, phone, code);
-            socket.setTimeout('verificationDelay', verificationDelay);
+            else socket.emit('verifyFail', 'Server error');
         }
         
         //Auth using call
