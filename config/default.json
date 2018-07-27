@@ -4,6 +4,11 @@
         "smsText": "SAPbot verification code: %s"
     },
 
+    "Urls": {
+        "abapTransformer": "http://192.168.1.107:8000/fmcall/",
+        "abapResetPasswordFunction": "z_bot_user_change"
+    },
+
     "Timers": {
         "___comment": "All timers are set in seconds",
 

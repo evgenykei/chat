@@ -1,13 +1,16 @@
 const fs            = require('fs'),
       util          = require('util'),
+      url           = require('url'),
       path          = require('path'),
-      config        = require('config');
+      config        = require('config'),      
+      superagent    = require('superagent');
       
 const existsAsync   = util.promisify(fs.exists),
       writeAsync    = util.promisify(fs.writeFile),
       readFileAsync = util.promisify(fs.readFile);    
 
-const timeForUploading = config.get('Timers.timeForUploading');
+const timeForUploading = config.get('Timers.timeForUploading'),
+      urls             = config.get("Urls");
 
 module.exports = {
 
@@ -96,14 +99,27 @@ module.exports = {
     }),
 
     //2.1. Сброс пароля
-    reset_password: async (socket) => ({
-        type: 'text',
-        value: await (async() => {
-            let filePath = path.join(config.get('Directories.files'), 'reset_password.txt');
-            if (!await existsAsync(filePath)) await writeAsync(filePath, 'reset_password');
-            return await readFileAsync(filePath, 'utf8');
-        })()
-    }),
+    reset_password: async (socket) => {
+        let result;
+
+        try {
+            let phone = socket.get('phone');
+            if (!phone) throw 'user\'s phone undefined';
+
+            let query = await superagent
+                .get(url.resolve(urls.abapTransformer, urls.abapResetPasswordFunction))
+                .query({ phone_number: phone });
+
+            if (query.body.subrc === 0) result = 'Your new password: ' + query.body.newpass;
+            else throw "bad request";
+        }
+        catch (err) {
+            console.log("Error during password reset: " + err);
+            result = "An error occured during password reset.";
+        }
+
+        return { type: 'text', value: result }
+    },
 
     //2.2. Запрос количества дней отпуска
     request_vacation_days: async (socket) => ({

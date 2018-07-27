@@ -1,6 +1,5 @@
 const config         = require('config'),
       validatePhone  = require('libphonenumber-js');
-      superagent     = require('superagent');
       
 const smsAuth        = require('../smsRuAuth'),
       fileModule     = require('./fileModule'),

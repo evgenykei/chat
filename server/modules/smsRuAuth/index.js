@@ -1,5 +1,6 @@
-const config = require('config'),
-      util   = require('util');
+const config     = require('config'),
+      util       = require('util'),
+      superagent = require('superagent');
 
 const sendSMSAddress      = 'https://sms.ru/sms/send',
       registerCallAddress = 'https://sms.ru/callcheck/add',
