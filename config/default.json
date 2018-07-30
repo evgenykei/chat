@@ -20,7 +20,7 @@
     },
 
     "Files": {        
-        "unixFileMode": 666
+        "unixFileMode": "0644"
     },
 
     "Directories": {

@@ -33,7 +33,7 @@ async function findFileName(name) {
         while (await existsAsync(path.join(fileDir, name)) === true)
             name = originalName + '-' + number++ + extname;
         
-        let fd = await openFileAsync(path.join(fileDir, name), 'w', unixMode);
+        let fd = await openFileAsync(path.join(fileDir, name), 'w', parseInt(unixMode, 8));
         await closeFileAsync(fd);
 
         return name;
