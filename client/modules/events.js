@@ -41,7 +41,25 @@ module.exports = function(socket) {
 
     $("#chatForm").submit(function() { functions.sendChatMessage(socket); });
 
-    $("#logout" ).click(function() { functions.logout(); });    
+    $("#logout" ).click(function() { functions.logout(); });
+    
+    $('#file-select').on('change', function(filename) {
+        var files = $(this).get(0).files;
+        Object.keys(files).forEach(function(key) {
+            functions.sendFile(socket, files[key]);
+        });
+        $('#file-select').val('')
+    });
+
+    $("#main-body").on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }).on('drop', function(e) {
+        var files = e.originalEvent.dataTransfer.files;
+        Object.keys(files).forEach(function(key) {
+            functions.sendFile(socket, files[key]);
+        });
+    });
 
     /* 
      *

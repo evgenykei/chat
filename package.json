@@ -17,11 +17,13 @@
     "libphonenumber-js": "^1.2.19",
     "method-override": "2.3.10",
     "mime-types": "^2.1.19",
+    "mississippi": "^3.0.0",
     "natural": "^0.6.1",
     "popper.js": "^1.14.3",
     "serve-static": "1.13.1",
     "sms_ru": "0.0.1",
     "socket.io": "2.0.4",
+    "socket.io-stream": "^0.9.1",
     "socketio-file-upload": "^0.6.1",
     "superagent": "^3.8.3",
     "underscore": "^1.9.1"

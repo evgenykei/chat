@@ -3,7 +3,9 @@ module.exports = function() {
     const Utf8       = require('crypto-js/enc-utf8'),
           Base64     = require('crypto-js/enc-base64'),
           SHA1       = require('crypto-js/sha1'),
-          downloadjs = require("../lib/download");
+          downloadjs = require("../lib/download"),
+          miss       = require('mississippi'),
+          ss         = require('socket.io-stream');
 
     const functions  = require('./functions'),
           config     = require('./config');
@@ -30,21 +32,6 @@ module.exports = function() {
         functions.showLogin();
         localStorage.removeItem('session');
     }
-
-    /* 
-     *
-     * Initialize socket.io uploader
-     * 
-     */
-
-    var uploader = new SocketIOFileUpload(socket);
-    uploader.listenOnDrop(document.getElementById("main-body"));
-    uploader.listenOnInput(document.getElementById("file-select"));
-
-    uploader.addEventListener("start", function(data){
-        functions.printChatStatus("Uploading file... Please wait.");
-    });
-
 
     /* 
      *
@@ -148,7 +135,7 @@ module.exports = function() {
 
         else if (type === 'file') {
             functions.postChat(type, 
-                "<div id=" + msg + " class=\"btn file-download\"> \
+                "<div id=\"" + msg + "\" class=\"btn file-download\"> \
                     <span class=\"mr-2 fa-stack fa\"> \
                         <i class=\"far fa-circle fa-stack-2x\"></i> \
                         <i class=\"fa fa-arrow-down fa-stack-1x\"></i> \
@@ -170,11 +157,25 @@ module.exports = function() {
      * 
      */
 
-    socket.on('downloadFile', function(data) {
+    ss(socket).on('downloadFile', function(receive, data) {
         try {
+            //parse input
             data = JSON.parse(functions.decrypt(data));
-            if (!data.base64 || !data.filename || !data.mimeType) throw "Wrong payload";
-            downloadjs(data.base64, data.filename, data.mimeType);
+            if (!receive || !data.filename || !data.mime) throw "Wrong payload";
+            
+            //configure streams
+            let decrypt = miss.through(
+                function (chunk, enc, cb) {
+                    cb(null, Buffer.from(functions.decrypt(chunk.toString()), 'hex'));
+                },
+                function (cb) { cb(null, ''); }
+            );
+            let concat = miss.concat(function(buffer) {
+                downloadjs(buffer, data.filename, data.mime);
+            });
+
+            //pipe streams
+            miss.pipe(receive, decrypt, concat);
         }
         catch (err) {
             functions.printChatStatus("An error occured during decrypting file.");

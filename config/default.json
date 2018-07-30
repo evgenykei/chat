@@ -19,6 +19,10 @@
         "timeForUploading": 60
     },
 
+    "Files": {        
+        "unixFileMode": 666
+    },
+
     "Directories": {
         "files": "./server/files",
         "upload": "./server/upload"

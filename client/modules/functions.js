@@ -1,7 +1,9 @@
-const Rabbit   = require('crypto-js/rabbit'),
-      Utf8     = require('crypto-js/enc-utf8'),
-      Chart    = require('chart.js'),
-      _        = require('underscore');
+const Rabbit = require('crypto-js/rabbit'),
+      Utf8   = require('crypto-js/enc-utf8'),
+      Chart  = require('chart.js'),
+      _      = require('underscore'),
+      miss   = require('mississippi'),
+      ss     = require('socket.io-stream');
 
 const config = require('./config');
 
@@ -232,6 +234,7 @@ module.exports = functions = {
      */
 
     encrypt: function(data) {
+        if (typeof data === 'object') data = JSON.stringify(data);
         return Rabbit.encrypt(data, config.password).toString();
     },
 
@@ -360,6 +363,23 @@ module.exports = functions = {
 
         //if they're mobile, close the keyboard
         if (config.isMobile) $("#msg").blur();
+    },
+
+    sendFile: function(socket, file) {
+        functions.printChatStatus("Uploading file... Please wait.");
+
+        let read = ss.createBlobReadStream(file);
+        let send = ss.createStream();
+        let encrypt = miss.through(
+            (chunk, enc, cb) => {
+                cb(null, functions.encrypt(chunk.toString('hex')));
+            },
+            (cb) => cb(null, '')
+        )
+
+        ss(socket).emit('uploadFile', send, functions.encrypt({ name: file.name, size: file.size }));
+
+        miss.pipe(read, encrypt, send);
     },
 
     downloadFile: function (socket, filename) {

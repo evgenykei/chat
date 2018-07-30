@@ -1,51 +1,96 @@
-const fs     = require('fs'),
-      util   = require('util'),
-      path   = require('path'),
-      config = require('config'),
-      mime   = require('mime-types'),
-      siofu  = require('socketio-file-upload');
+const fs            = require('fs'),
+      util          = require('util'),
+      path          = require('path'),
+      config        = require('config'),
+      mime          = require('mime-types'),
+      ss            = require('socket.io-stream'),
+      miss          = require('mississippi'),
+      siofu         = require('socketio-file-upload');
 
-const existsAsync   = util.promisify(fs.exists),
-      readFileAsync = util.promisify(fs.readFile);      
+const existsAsync    = util.promisify(fs.exists),
+      readFileAsync  = util.promisify(fs.readFile),
+      openFileAsync  = util.promisify(fs.open),
+      closeFileAsync = util.promisify(fs.close);
+
+const fileDir      = config.get('Directories.upload');
+      unixMode     = config.get('Files.unixFileMode');
+      maxFileSize  = 10485760;
+      maxSizeError = (name) => name + " file is too big. Max size: " + (maxFileSize / 1048576).toFixed(2) + " MB.";
+
+/**
+ * Private function to find name for an uploaded file.
+ * @param  {String} name The name requested by the client
+ * @return {String} The name given by the server
+ */
+async function findFileName(name) {
+    try {
+        name = name.replace(/[\/\?<>\\:\*\|":]|[\x00-\x1f\x80-\x9f]|^\.+$/g, "_");
+
+        let extname = path.extname(name), 
+            number  = 1;
+
+        let originalName = path.basename(name, extname);
+        while (await existsAsync(path.join(fileDir, name)) === true)
+            name = originalName + '-' + number++ + extname;
+        
+        let fd = await openFileAsync(path.join(fileDir, name), 'w', unixMode);
+        await closeFileAsync(fd);
+
+        return name;
+    }
+    catch (err) {
+        console.log("Uploading file error: " + err);
+        return null;
+    }
+}
 
 function initialize(socket) {
-
-    const fileDir = config.get('Directories.upload');
 
     /*
      *
      * Uploading
+     * Encryption chain: (Client: Buffer > HEX string > Encrypted HEX string) > (Server: Backwards)
      * 
      */
+    ss(socket).on('uploadFile', async function(receive, data) {
+        try {
+            //Check for uploading permission
+            if (!socket.isAuth()) return;
+            if (socket.checkTimeout('uploadTill') === false) {
+                socket.sendChatData({ type: 'text', value: 'Uploading is not allowed now' });
+                return;
+            }
 
-    var uploader = new siofu();
-    uploader.dir = fileDir;
-    uploader.maxFileSize = 10485760;
-    uploader.listen(socket);
+            //Validate file data
+            data = JSON.parse(socket.decrypt(data));
+            if (!receive || !data.name || !data.size) throw "corrupted packet";
+            if (data.size > maxFileSize) throw maxSizeError(data.name);
+            let filename = await findFileName(data.name);
+            if (filename == null) throw "cannot create file";
 
-    uploader.on('start', function(event) {
-        if (!socket.isAuth()) return uploader.abort(event.file.id, socket);
-        if (socket.checkTimeout('uploadTill') === false) {
-            socket.sendChatData({ type: 'text', value: 'Uploading is not allowed now' });
-            return uploader.abort(event.file.id, socket);
+            //Configure streams
+            let size = 0, decryptedChunk;
+            let decrypt = miss.through(
+                (chunk, enc, cb) => {
+                    decryptedChunk = Buffer.from(socket.decrypt(chunk.toString()), 'hex');
+                    size += decryptedChunk.length;
+                    if (size > maxFileSize) throw maxSizeError(data.name);
+                    cb(null, decryptedChunk);
+                },
+                (cb) => cb(null, '')
+            );
+            let write = fs.createWriteStream(path.join(fileDir, filename));
+
+            //Pipe streams
+            miss.pipe(receive, decrypt, write, function(err) { 
+                if (err) throw err;
+                socket.sendChatData({ type: 'file', value: filename });
+            });
         }
-
-        /*
-         * there could be some verification, for example
-         */
-
-        /*
-        if (/\.exe$/.test(event.file.name)) {
-            uploader.abort(event.file.id, socket);
-        }*/
-    });
-
-    uploader.on('saved', function(event) {
-        if (event.file.success === true) socket.sendChatData({ type: 'file', value: event.file.base + path.extname(event.file.name) });
-    });
-
-    uploader.on('error', function(event) {
-        socket.sendChatData({ type: 'text', value: 'Uploading failed: ' + event.error.message });
+        catch (error) {
+            console.log("Uploading file error: " + error);
+            socket.sendChatData({ type: 'text', value: 'Uploading failed: ' + error });
+        }
     });
 
     /*
@@ -54,23 +99,35 @@ function initialize(socket) {
      * 
      */
 
+
     socket.on('downloadFile', async function(filename) {
-        try {            
+        try {
+            //parse input
             filename = socket.decrypt(filename);
             if (!filename) return socket.sendChatMessage("Wrong file request.");
 
+            //check file existence
             let filePath = path.join(fileDir, filename);
             if (!await existsAsync(filePath)) return socket.sendChatMessage("File not found.");
 
-            let mimeType = mime.lookup(filePath);
-            let response = {
-                base64: 'data:' + mimeType + ';base64,' + new Buffer(await readFileAsync(filePath)).toString('base64'),
-                filename: filename,
-                mimeType: mimeType
-            };
+            //configure streams
+            let read = fs.createReadStream(filePath);
+            let send = ss.createStream();
+            let encrypt = miss.through(
+                (chunk, enc, cb) => {
+                    cb(null, socket.encrypt(chunk.toString('hex')));
+                },
+                (cb) => cb(null, '')
+            );
 
-            response = socket.encrypt(JSON.stringify(response));
-            socket.emit('downloadFile', response);
+            //send stream and additional data
+            ss(socket).emit('downloadFile', send, socket.encrypt(JSON.stringify({ 
+                filename: filename, 
+                mime: mime.lookup(filePath) 
+            })));
+
+            //pipe streams
+            miss.pipe(read, encrypt, send);
         }
         catch (err) {
             console.log("Error during user file download: " + err);

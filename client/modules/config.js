@@ -1,6 +1,5 @@
 module.exports = config = {
     appName: "SAPbot",
-    ioPort: "3000",
 
     password: null,
     phone: null,
