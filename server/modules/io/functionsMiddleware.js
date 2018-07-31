@@ -3,8 +3,9 @@ const config   = require('config'),
 
 const buttonActions = require('../menu');
 
-const sessionLife    = config.get('Timers.sessionLife'),
-      configMessages = config.get('Messages');
+const sessionLife      = config.get('Timers.sessionLife'),
+      timeForUploading = config.get('Timers.timeForUploading'),
+      configMessages   = config.get('Messages');
 
 var socket_data = {};
 var socket_intervals = {};
@@ -24,11 +25,11 @@ module.exports = function (socket, next) {
      */
 
     socket.get = function (key) {
-       return socket_data[socket.id][key];
+        return socket_data[socket.id][key];
     };
 
     socket.set = function (key, value) {
-       socket_data[socket.id][key] = value;
+        socket_data[socket.id][key] = value;
     };
 
     /*
@@ -52,8 +53,9 @@ module.exports = function (socket, next) {
         }
     };
 
-    socket.setTimeout = function(key, time) {
+    socket.setTimeout = function(key, time, func) {
         socket_timeouts[socket.id][key] = Math.floor(Date.now() / 1000) + time;
+        if (func) setTimeout(func, time * 1000);
     };
 
     socket.checkTimeout = function(key) {
@@ -90,6 +92,23 @@ module.exports = function (socket, next) {
         delete socket_intervals[socket.id];
         delete socket_timeouts[socket.id];
     };
+
+    /*
+     *
+     * uploading handlers
+     * 
+     */
+
+    socket.subscribeToUpload = function(callback) {
+        socket.setTimeout('uploadTill', timeForUploading, () => socket.set('uploadCallback', null));
+        socket.set('uploadCallback', callback);
+        return timeForUploading;
+    };
+
+    socket.uploadAction = function(filename) {
+        let action = socket.get('uploadCallback');
+        if (action) action(filename);
+    }
 
     /*
      *

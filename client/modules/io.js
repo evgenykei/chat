@@ -148,6 +148,10 @@ module.exports = function() {
         else if (type === 'upload') {
             functions.postChat(type, 'Server requests file(s) to upload. You have ' + msg + ' seconds.', from);
         }
+
+        else if (type === 'barcode') {
+            functions.postChat(type, 'Server requests barcode photo to upload. You have ' + msg + ' seconds.', from);
+        }
         
     });
 

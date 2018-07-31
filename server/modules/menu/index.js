@@ -3,14 +3,15 @@ const fs            = require('fs'),
       url           = require('url'),
       path          = require('path'),
       config        = require('config'),      
-      superagent    = require('superagent');
+      superagent    = require('superagent'),
+      quagga        = require('quagga').default;
       
-const existsAsync   = util.promisify(fs.exists),
-      writeAsync    = util.promisify(fs.writeFile),
-      readFileAsync = util.promisify(fs.readFile);    
+const existsAsync    = util.promisify(fs.exists),
+      writeAsync     = util.promisify(fs.writeFile),
+      readFileAsync  = util.promisify(fs.readFile);
 
-const timeForUploading = config.get('Timers.timeForUploading'),
-      urls             = config.get("Urls");
+const urls           = config.get("Urls"),
+      barcodeReaders = config.get("Barcode.readers");
 
 module.exports = {
 
@@ -23,6 +24,7 @@ module.exports = {
             2.2. Запрос количества дней отпуска
             2.3. Заявка на отпуск
         3. Обращение в службу поддержки
+        4. Распознать баркод
      */
 
     //Меню
@@ -40,6 +42,10 @@ module.exports = {
             {
                 title: 'Обращение в службу поддержки',
                 action: 'contact_support'
+            },
+            {
+                title: 'Распознать баркод',
+                action: 'read_barcode'
             }
         ]
     }),
@@ -143,20 +149,37 @@ module.exports = {
 
     //3. Обращение в службу поддержки
     contact_support: async (socket) => {
-        socket.setTimeout('uploadTill', timeForUploading);
+        let timeForUploading = socket.subscribeToUpload((file) => socket.sendChatData({ type: 'file', value: file.name }));
+
         return {
             type: 'upload',
             value: timeForUploading
         };
-    },  
+    },
 
-    /*//Uploading example
-    button3_3_action: async function(socket) {
-        socket.setTimeout('uploadTill', timeForUploading);
+    //4. Распознать баркод
+    read_barcode: async (socket) => {
+        let timeForUploading = socket.subscribeToUpload(async (file) => {
+            try {
+                quagga.decodeSingle({
+                    src: file.path,
+                    numOfWorkers: 0,
+                    decoder: { readers: barcodeReaders },
+                }, 
+                function(result) {
+                    if (result && result.codeResult) socket.sendChatMessage("Barcode result: " + result.codeResult.code);
+                    else socket.sendChatMessage("Barcode is not detected");
+                });
+            }
+            catch (err) {
+                console.log("Barcode read error: " + err);
+                socket.sendChatMessage("An error occured while barcode reading.");
+            }
+        });
+
         return {
-            type: 'upload',
+            type: 'barcode',
             value: timeForUploading
         };
-    }*/
-
+    }
 }

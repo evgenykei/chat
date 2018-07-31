@@ -20,6 +20,7 @@
     "mississippi": "^3.0.0",
     "natural": "^0.6.1",
     "popper.js": "^1.14.3",
+    "quagga": "^0.12.1",
     "serve-static": "1.13.1",
     "sms_ru": "0.0.1",
     "socket.io": "2.0.4",

@@ -83,8 +83,11 @@ function initialize(socket) {
 
             //Pipe streams
             miss.pipe(receive, decrypt, write, function(err) { 
-                if (err) throw err;
-                socket.sendChatData({ type: 'file', value: filename });
+                if (err) {
+                    receive.end(); decrypt.end(); write.end();
+                    throw err;
+                }
+                socket.uploadAction({ name: filename, path: path.join(fileDir, filename) });
             });
         }
         catch (error) {
@@ -121,9 +124,11 @@ function initialize(socket) {
             );
 
             //send stream and additional data
+            let mimeType = mime.contentType(filePath);
+            if (!mimeType) mimeType = 'text/plain;charset=utf-8';
             ss(socket).emit('downloadFile', send, socket.encrypt(JSON.stringify({ 
                 filename: filename, 
-                mime: mime.lookup(filePath) 
+                mime: mimeType
             })));
 
             //pipe streams

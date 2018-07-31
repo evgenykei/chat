@@ -1,7 +1,8 @@
 const fs              = require('fs'),
       util            = require('util'),
       path            = require('path'),
-      http           = require('http'),
+      http            = require('http'),
+      config          = require('config'),
       express         = require('express'),
       serveStatic     = require('serve-static'),
       bodyParser      = require('body-parser'),
@@ -15,26 +16,35 @@ const fileExistsAsync         = util.promisify(fs.exists),
 const trainingDataPath        = path.join(__dirname, 'training.json'),
       classifierPersistedPath = path.join(__dirname, 'classifier.json');
 
+const trainingInterval = config.get("Timers.trainingInterval");
+
 var classifier = new natural.BayesClassifier(PorterStemmerRu);
-var knownTexts  = [];
+var knownTexts = [];
 
 module.exports = functions = {
 
     initialize: async () => {
         try {
-            //Check training data and train
-            if (await fileExistsAsync(trainingDataPath)) {
+            let trainingFunc = async () => {
                 let trainingData = JSON.parse(await readFileAsync(trainingDataPath));
 
                 //Load known texts
+                knownTexts = [];
                 trainingData.map((doc) => knownTexts.push(doc.text.toLowerCase()));
 
                 await functions.train(trainingData);
                 await functions.save();
+            };
+
+            //Check training data and train
+            if (await fileExistsAsync(trainingDataPath)) {
+                trainingFunc();
+                setInterval(trainingFunc, trainingInterval * 1000);
             }
             //Else load
-            else if (await fileExistsAsync(classifierPersistedPath)) 
+            else if (await fileExistsAsync(classifierPersistedPath)) {
                 await functions.load();
+            }
         }
         catch (err) {
             console.log("Error during classifier initialization: " + err);
