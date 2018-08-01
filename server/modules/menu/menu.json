@@ -1,0 +1,48 @@
+{
+    "id": "main_menu",
+    "class": "Общее меню",
+    "submenu": [
+       {
+          "id": "analytical_reports",
+          "class": "Аналитическая отчетность",
+          "title": "Аналитическая отчетность",
+          "submenu": [
+             {
+                "id": "weekly_report",
+                "title": "Отчет за неделю"
+             },
+             {
+                "id": "monthly_report",
+                "title": "Отчет за месяц"
+             }
+          ]
+       },
+       {
+          "id": "employee_services",
+          "class": "Сервисы сотрудника",
+          "title": "Сервисы сотрудника",
+          "submenu": [
+             {
+                "id": "reset_password",
+                "title": "Сброс пароля"
+             },
+             {
+                "id": "request_vacation_days",
+                "title": "Запрос количества дней отпуска"
+             },
+             {
+                "id": "request_vacation",
+                "title": "Заявка на отпуск"
+             }
+          ]
+       },
+       {
+          "id": "contact_support",
+          "title": "Обращение в службу поддержки"
+       },
+       {
+          "id": "read_barcode",
+          "title": "Распознать баркод"
+       }
+    ]
+ }

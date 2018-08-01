@@ -65,6 +65,7 @@ module.exports = functions = {
     train: (trainingArr) => new Promise((resolve, reject) => {
         try {
             trainingArr.forEach((trainingEl) => classifier.addDocument(trainingEl.text, trainingEl.class));
+            classifier.events.removeAllListeners();
             classifier.events.on('trainedWithDocument', (obj) => {
                 if (obj.index + 1 == obj.total) resolve(obj);
             });

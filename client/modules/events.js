@@ -31,7 +31,7 @@ module.exports = function(socket) {
      */
 
     $("#showMenu" ).click(function() {
-        if ($("#buttonPanel").children().length == 0) functions.sendButtonAction(socket, 'root_action');
+        if ($("#buttonPanel").children().length == 0) functions.sendButtonAction(socket, 'main_menu');
         else functions.sendButtonAction(socket, null);
     });
 

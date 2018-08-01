@@ -13,99 +13,74 @@ const existsAsync    = util.promisify(fs.exists),
 const urls           = config.get("Urls"),
       barcodeReaders = config.get("Barcode.readers");
 
-module.exports = {
+const menuFilePath = path.join(__dirname, 'menu.json'),
+      menu         = [];
 
-    /*  Структура меню
-        1. Аналитическая отчетность
-            1.1. Отчет за неделю
-            1.2. Отчет за месяц
-        2. Сервисы сотрудника
-            2.1. Сброс пароля
-            2.2. Запрос количества дней отпуска
-            2.3. Заявка на отпуск
-        3. Обращение в службу поддержки
-        4. Распознать баркод
-     */
+/*  
+ *  Структура меню
+ *  1. Аналитическая отчетность
+ *      1.1. Отчет за неделю
+ *      1.2. Отчет за месяц
+ *  2. Сервисы сотрудника
+ *      2.1. Сброс пароля
+ *      2.2. Запрос количества дней отпуска
+ *      2.3. Заявка на отпуск
+ *  3. Обращение в службу поддержки
+ *  4. Распознать баркод
+ */   
+async function readMenu(menu, actions) {
+    try {
+        let menuObject = JSON.parse(await readFileAsync(menuFilePath));
+        let treeQueue = [menuObject], item;
+        while (item = treeQueue.shift()) {
+            if (!item.hasOwnProperty('id')) throw "Menu item must have an id";
 
-    //Меню
-    root_action: async (socket) => ({
-        type: 'menu',
-        value: [
-            {
-                title: 'Аналитическая отчетность',
-                action: 'analytical_reports'
-            },
-            {
-                title: 'Сервисы сотрудника',
-                action: 'employee_services'
-            },
-            {
-                title: 'Обращение в службу поддержки',
-                action: 'contact_support'
-            },
-            {
-                title: 'Распознать баркод',
-                action: 'read_barcode'
+            if (item.hasOwnProperty('submenu')) {
+                item.submenu.forEach((subitem) => treeQueue.push(subitem));
+
+                let parsedItem = {
+                    class: item.class,
+                    action: item.id,
+                    submenu: item.submenu.map((subitem) => ({
+                        class: subitem.class,
+                        title: subitem.title,
+                        action: subitem.id + ';' + item.id
+                    }))
+                };
+                menu.push(parsedItem);
+
+                actions[item.id] = (backAction) => async (socket) => ({
+                    type: 'menu',
+                    value: backAction === undefined 
+                        ? parsedItem.submenu 
+                        : [{ title: 'Назад', action: backAction }].concat(parsedItem.submenu)
+                });
             }
-        ]
-    }),
+        }
+    }
+    catch (error) {
+        console.log("Error during menu JSON reading: " + error);
+    }
+}
 
-    //1. Аналитическая отчетность
-    analytical_reports: async (socket) => ({
-        type: 'menu',
-        value: [
-            {
-                title: 'Назад',
-                action: 'root_action'
-            },
-            {
-                title: 'Отчет за неделю',
-                action: 'weekly_report'
-            },
-            {
-                title: 'Отчет за месяц',
-                action: 'monthly_report'
-            }
-        ]
-    }),
+
+//Template: function_name: (args) => async (socket) => function that returns { type, value }
+const actions = {
 
     //1.1. Отчет за неделю
-    weekly_report: async (socket) => ({
+    weekly_report: (args) => async (socket) => ({
         type: 'chart',
         value: null
     }),
 
     //1.2. Отчет за неделю
-    monthly_report: async (socket) => ({
+    monthly_report: (args) => async (socket) => ({
         type: 'chart',
         value: null
     }),
 
-    //2. Сервисы сотрудника
-    employee_services: async (socket) => ({
-        type: 'menu',
-        value: [
-            {
-                title: 'Назад',
-                action: 'root_action'
-            },
-            {
-                title: 'Сброс пароля',
-                action: 'reset_password'
-            },
-            {
-                title: 'Запрос количества дней отпуска',
-                action: 'request_vacation_days'
-            },
-            {
-                title: 'Заявка на отпуск',
-                action: 'request_vacation'
-            }
-        ]
-    }),
-
     //2.1. Сброс пароля
-    reset_password: async (socket) => {
+    reset_password: (args) => async (socket) => {
         let result;
 
         try {
@@ -128,7 +103,7 @@ module.exports = {
     },
 
     //2.2. Запрос количества дней отпуска
-    request_vacation_days: async (socket) => ({
+    request_vacation_days: (args) => async (socket) => ({
         type: 'text',
         value: await (async() => {
             let filePath = path.join(config.get('Directories.files'), 'request_vacation_days.txt');
@@ -138,7 +113,7 @@ module.exports = {
     }),
 
     //2.3. Заявка на отпуск
-    request_vacation: async (socket) => {
+    request_vacation: (args) => async (socket) => {
         let filePath = path.join(config.get('Directories.upload'), 'test.txt');
         if (!await existsAsync(filePath)) await writeAsync(filePath, 'test');
         return {
@@ -148,7 +123,7 @@ module.exports = {
     },
 
     //3. Обращение в службу поддержки
-    contact_support: async (socket) => {
+    contact_support: (args) => async (socket) => {
         let timeForUploading = socket.subscribeToUpload((file) => socket.sendChatData({ type: 'file', value: file.name }));
 
         return {
@@ -158,7 +133,7 @@ module.exports = {
     },
 
     //4. Распознать баркод
-    read_barcode: async (socket) => {
+    read_barcode: (args) => async (socket) => {
         let timeForUploading = socket.subscribeToUpload(async (file) => {
             try {
                 quagga.decodeSingle({
@@ -183,3 +158,16 @@ module.exports = {
         };
     }
 }
+
+module.exports.initialize = async() => await readMenu(menu, actions);
+
+module.exports.action = function(action) {
+    let args = action.split(';');
+    return actions[args[0]](args[1]);
+};
+
+module.exports.menuByClass = function(className) {
+    let foundMenu = menu.find((item) => item.class === className);
+    if (!foundMenu) return null;
+    return actions[foundMenu.action]();
+};

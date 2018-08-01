@@ -3,7 +3,7 @@ const config         = require('config'),
       
 const smsAuth        = require('../smsRuAuth'),
       fileModule     = require('./fileModule'),
-      buttonActions  = require('../menu'),
+      menuModule     = require('../menu'),
       classifier     = require('../classifier');
 
 const callConfirmationCheckInterval = config.get('Timers.callConfirmationCheckInterval'),
@@ -79,7 +79,6 @@ function onConnection(socket) {
         socket.emit('joinConfirm');
 
         //send menu and welcome message
-        socket.sendChatData(await buttonActions['root_action'](socket));
         socket.sendChatData({ type: 'text', value: configMessages.welcome });
     }); 
 
@@ -89,8 +88,12 @@ function onConnection(socket) {
     
         let decrypted = socket.decrypt(msg);
         if (decrypted) { 
+            let className = await classifier.classify(decrypted);
+            let classMenu = menuModule.menuByClass(className);
+
             socket.sendChatData({ type: 'text', value: decrypted, from: socket.get('phone') });
-            socket.sendChatData({ type: 'text', value: 'Message class: ' + await classifier.classify(decrypted) })
+            socket.sendChatData({ type: 'text', value: 'Message class: ' + className })
+            if (classMenu) socket.sendChatData(await classMenu(socket));
         }
     });
 
@@ -99,9 +102,9 @@ function onConnection(socket) {
         if (!socket.isAuth()) return;
 
         buttonAction = socket.decrypt(buttonAction);
-        if (!buttonAction || !buttonActions[buttonAction]) return;
+        if (!buttonAction || !menuModule.action(buttonAction)) return;
 
-        let result = await buttonActions[buttonAction](socket);
+        let result = await menuModule.action(buttonAction)(socket);
         if (result) socket.sendChatData(result);
     });
 
@@ -118,6 +121,7 @@ function onConnection(socket) {
 module.exports.initialize = async function(server) {
     //Initializing related modules
     await classifier.initialize();
+    await menuModule.initialize();
 
     let io = require('socket.io').listen(server);
     io.use(require('./functionsMiddleware'));
