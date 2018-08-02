@@ -152,6 +152,11 @@ module.exports = function() {
         else if (type === 'barcode') {
             functions.postChat(type, 'Server requests barcode photo to upload. You have ' + msg + ' seconds.', from);
         }
+
+        else if (type === 'date') {
+            functions.buildDatepicker(socket, msg.format, msg.timer);
+            functions.postChat(type, 'Enter date in \'' + msg.format + '\' format or use datepicker.', from);
+        }
         
     });
 

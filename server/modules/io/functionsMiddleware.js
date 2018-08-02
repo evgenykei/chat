@@ -4,7 +4,7 @@ const config   = require('config'),
 const buttonActions = require('../menu');
 
 const sessionLife      = config.get('Timers.sessionLife'),
-      timeForUploading = config.get('Timers.timeForUploading'),
+      timeForAction    = config.get('Timers.timeForAction'),
       configMessages   = config.get('Messages');
 
 var socket_data = {};
@@ -54,18 +54,29 @@ module.exports = function (socket, next) {
     };
 
     socket.setTimeout = function(key, time, func) {
-        socket_timeouts[socket.id][key] = Math.floor(Date.now() / 1000) + time;
-        if (func) setTimeout(func, time * 1000);
+        socket_timeouts[socket.id][key] = {
+            elapse: Math.floor(Date.now() / 1000) + time,
+            object: func ? setTimeout(func, time * 1000) : null
+        };
+    };
+
+    socket.clearTimeout = function(key) {
+        if (!socket_timeouts[socket.id]) return;
+        let timeout = socket_timeouts[socket.id][key];
+        if (timeout) {
+            if (timeout.object) clearTimeout(timeout.object);
+            delete socket_timeouts[socket.id][key];
+        }
     };
 
     socket.checkTimeout = function(key) {
         if (!socket_timeouts[socket.id][key]) return false;
-        return Math.floor(Date.now() / 1000) < socket_timeouts[socket.id][key];
+        return Math.floor(Date.now() / 1000) < socket_timeouts[socket.id][key].elapse;
     };
 
     socket.timeoutLeft = function(key) {
         if (socket.checkTimeout(key) === false) return 0;
-        return socket_timeouts[socket.id][key] - Math.floor(Date.now() / 1000);
+        return socket_timeouts[socket.id][key].elapse - Math.floor(Date.now() / 1000);
     };
 
     /*
@@ -87,6 +98,8 @@ module.exports = function (socket, next) {
     socket.destroy = function() {
         for (let interval in socket_intervals[socket.id])
             socket.clearInterval(interval);
+        for (let timeout in socket_timeouts[socket.id])
+            socket.clearTimeout(timeout);
             
         delete socket_data[socket.id];
         delete socket_intervals[socket.id];
@@ -95,20 +108,43 @@ module.exports = function (socket, next) {
 
     /*
      *
-     * uploading handlers
+     * Action handlers
      * 
      */
 
-    socket.subscribeToUpload = function(callback) {
-        socket.setTimeout('uploadTill', timeForUploading, () => socket.set('uploadCallback', null));
-        socket.set('uploadCallback', callback);
-        return timeForUploading;
+    socket.subscribeToAction = function(name, callback, elapsedCallback) {
+        socket.setTimeout(name + '.actionTill', timeForAction, () => {
+            socket.set(name + '.actionCallback', null);
+            if (elapsedCallback) elapsedCallback();
+        });
+        socket.set(name + '.actionCallback', callback);
+        return timeForAction;
     };
 
-    socket.uploadAction = function(filename) {
-        let action = socket.get('uploadCallback');
-        if (action) action(filename);
+    socket.triggerAction = function(name, arg) {
+        let action = socket.get(name + '.actionCallback');
+        if (action) action(arg);
+    };
+
+    socket.checkAction = function(name) {
+        return socket.checkTimeout(name + '.actionTill');
     }
+
+    /*
+     *
+     * Chat hook
+     * 
+     */
+    
+    socket.setChatHook = function(regex, callback) {
+        socket.set('chatHook', regex);
+        return socket.subscribeToAction('chatHook', (text) => callback(text), () => socket.set('chatHook', null));
+    },
+
+    socket.checkChatHook = function(text) {
+        let regex = socket.get('chatHook');
+        if (regex && regex.test(text) === true) socket.triggerAction('chatHook', text);
+    },
 
     /*
      *

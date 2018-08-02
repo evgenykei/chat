@@ -56,7 +56,7 @@ function initialize(socket) {
         try {
             //Check for uploading permission
             if (!socket.isAuth()) return;
-            if (socket.checkTimeout('uploadTill') === false) {
+            if (socket.checkAction('upload') === false) {
                 socket.sendChatData({ type: 'text', value: 'Uploading is not allowed now' });
                 return;
             }
@@ -87,7 +87,7 @@ function initialize(socket) {
                     receive.end(); decrypt.end(); write.end();
                     throw err;
                 }
-                socket.uploadAction({ name: filename, path: path.join(fileDir, filename) });
+                socket.triggerAction('upload', { name: filename, path: path.join(fileDir, filename) });
             });
         }
         catch (error) {

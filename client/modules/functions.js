@@ -62,7 +62,7 @@ module.exports = functions = {
     postChat: function(type, message, from) {
         var text, classes, mentioned;
 
-        if (config.phone === from) classes = "my-message";
+        if (from !== 'Server') classes = "my-message";
         else {
             classes = "their-message";
             mentioned = message.indexOf(config.phone) > -1;
@@ -176,6 +176,31 @@ module.exports = functions = {
             });
             return buttons.slice(3);
         }, buttons);
+    },
+
+    /* 
+     *
+     * Open datepicker
+     * 
+     */
+
+    buildDatepicker: function(socket, dateFormat, timer) {
+        var panel = $("#buttonPanel");
+        panel.empty();
+        $("#showMenu").addClass("active");
+        
+        $('#buttonPanel').datepicker().data('datepicker').destroy();
+        $('#buttonPanel').datepicker({
+            minDate: new Date(),
+            dateFormat: dateFormat,
+            onSelect: function(formattedDate) {
+                socket.emit('textSend', functions.encrypt(formattedDate));
+                $('#buttonPanel').empty();
+                $('#buttonPanel').datepicker().data('datepicker').hide();
+            }
+        })
+        $('.datepicker-inline').addClass("mt-1 mt-md-2 col-12");
+        $('.datepicker').css("width", "100%");
     },
 
     /* 

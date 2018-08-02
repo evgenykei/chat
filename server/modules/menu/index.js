@@ -4,14 +4,15 @@ const fs            = require('fs'),
       path          = require('path'),
       config        = require('config'),      
       superagent    = require('superagent'),
-      quagga        = require('quagga').default;
+      quagga        = require('quagga').default,
+      moment        = require('moment');
       
 const existsAsync    = util.promisify(fs.exists),
       writeAsync     = util.promisify(fs.writeFile),
       readFileAsync  = util.promisify(fs.readFile);
 
-const urls           = config.get("Urls"),
-      barcodeReaders = config.get("Barcode.readers");
+const urls           = config.get('Urls'),
+      barcodeReaders = config.get('Barcode.readers');
 
 const menuFilePath = path.join(__dirname, 'menu.json'),
       menu         = [];
@@ -33,7 +34,7 @@ async function readMenu(menu, actions) {
         let menuObject = JSON.parse(await readFileAsync(menuFilePath));
         let treeQueue = [menuObject], item;
         while (item = treeQueue.shift()) {
-            if (!item.hasOwnProperty('id')) throw "Menu item must have an id";
+            if (!item.hasOwnProperty('id')) throw 'Menu item must have an id';
 
             if (item.hasOwnProperty('submenu')) {
                 item.submenu.forEach((subitem) => treeQueue.push(subitem));
@@ -59,7 +60,7 @@ async function readMenu(menu, actions) {
         }
     }
     catch (error) {
-        console.log("Error during menu JSON reading: " + error);
+        console.log('Error during menu JSON reading: ' + error);
     }
 }
 
@@ -92,25 +93,52 @@ const actions = {
                 .query({ phone_number: phone });
 
             if (query.body.subrc === 0) result = 'Your new password: ' + query.body.newpass;
-            else throw "bad request";
+            else throw 'bad request';
         }
         catch (err) {
-            console.log("Error during password reset: " + err);
-            result = "An error occured during password reset.";
+            console.log('Error during password reset: ' + err);
+            result = 'An error occured during password reset.';
         }
 
         return { type: 'text', value: result }
     },
 
     //2.2. Запрос количества дней отпуска
-    request_vacation_days: (args) => async (socket) => ({
-        type: 'text',
-        value: await (async() => {
-            let filePath = path.join(config.get('Directories.files'), 'request_vacation_days.txt');
-            if (!await existsAsync(filePath)) await writeAsync(filePath, 'request_vacation_days');
-            return await readFileAsync(filePath, 'utf8');
-        })()
-    }),
+    request_vacation_days: (args) => async (socket) => {
+        const dateRegex = /^(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[012]).(19|20)\d\d$/;
+
+        let timeForAction = socket.setChatHook(dateRegex, async (date) => {
+            let result;
+            try {
+                let phone = socket.get('phone'), parsedDate = moment(date, 'DD.MM.YYYY');
+                if (!phone) throw 'user\'s phone undefined';
+                if (!parsedDate.isValid()) throw 'The entered date is not valid.';
+
+                parsedDate = parsedDate.format('YYYYMMDD');
+
+                let query = await superagent
+                    .get(url.resolve(urls.abapTransformer, urls.abapDaysVacationFunction))
+                    .query({ phone_number: phone, dateto: parsedDate });
+    
+                if (query.body.days) result = 'Number of vacation days: ' + query.body.days;
+                else throw 'bad request';
+            }
+            catch (err) {
+                console.log('Error during vacation days requesting: ' + err);
+                result = 'An error occured during requesting number of vacation days.';
+            }
+
+            socket.sendChatData({ type: 'text', value: result });
+        });
+
+        return {
+            type: 'date',
+            value: {
+                format: 'dd.mm.yyyy',
+                timer: timeForAction
+            }
+        }
+    },
 
     //2.3. Заявка на отпуск
     request_vacation: (args) => async (socket) => {
@@ -124,17 +152,17 @@ const actions = {
 
     //3. Обращение в службу поддержки
     contact_support: (args) => async (socket) => {
-        let timeForUploading = socket.subscribeToUpload((file) => socket.sendChatData({ type: 'file', value: file.name }));
+        let timeForAction = socket.subscribeToAction('upload', (file) => socket.sendChatData({ type: 'file', value: file.name }));
 
         return {
             type: 'upload',
-            value: timeForUploading
+            value: timeForAction
         };
     },
 
     //4. Распознать баркод
     read_barcode: (args) => async (socket) => {
-        let timeForUploading = socket.subscribeToUpload(async (file) => {
+        let timeForAction = socket.subscribeToAction('upload', async (file) => {
             try {
                 quagga.decodeSingle({
                     src: file.path,
@@ -142,19 +170,19 @@ const actions = {
                     decoder: { readers: barcodeReaders },
                 }, 
                 function(result) {
-                    if (result && result.codeResult) socket.sendChatMessage("Barcode result: " + result.codeResult.code);
-                    else socket.sendChatMessage("Barcode is not detected");
+                    if (result && result.codeResult) socket.sendChatMessage('Barcode result: ' + result.codeResult.code);
+                    else socket.sendChatMessage('Barcode is not detected');
                 });
             }
             catch (err) {
-                console.log("Barcode read error: " + err);
-                socket.sendChatMessage("An error occured while barcode reading.");
+                console.log('Barcode read error: ' + err);
+                socket.sendChatMessage('An error occured while barcode reading.');
             }
         });
 
         return {
             type: 'barcode',
-            value: timeForUploading
+            value: timeForAction
         };
     }
 }

@@ -6,7 +6,8 @@
 
     "Urls": {
         "abapTransformer": "http://192.168.1.107:8000/fmcall/",
-        "abapResetPasswordFunction": "z_bot_user_change"
+        "abapResetPasswordFunction": "z_bot_user_change",
+        "abapDaysVacationFunction": "z_bot_daysvacation"
     },
 
     "Timers": {
@@ -16,7 +17,7 @@
         "callConfirmationCheckInterval": 10,
         "callConfirmationTimeout": 300,
         "verificationDelay": 30,
-        "timeForUploading": 60,
+        "timeForAction": 60,
         "trainingInterval": 60
     },
 

@@ -91,6 +91,7 @@ function onConnection(socket) {
             let className = await classifier.classify(decrypted);
             let classMenu = menuModule.menuByClass(className);
 
+            socket.checkChatHook(decrypted);
             socket.sendChatData({ type: 'text', value: decrypted, from: socket.get('phone') });
             socket.sendChatData({ type: 'text', value: 'Message class: ' + className })
             if (classMenu) socket.sendChatData(await classMenu(socket));
