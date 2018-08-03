@@ -5,44 +5,44 @@
        {
           "id": "analytical_reports",
           "class": "Аналитическая отчетность",
-          "title": "Аналитическая отчетность",
+          "title": "menu.analyticalReports",
           "submenu": [
              {
                 "id": "weekly_report",
-                "title": "Отчет за неделю"
+                "title": "menu.weeklyReport"
              },
              {
                 "id": "monthly_report",
-                "title": "Отчет за месяц"
+                "title": "menu.monthlyReport"
              }
           ]
        },
        {
           "id": "employee_services",
           "class": "Сервисы сотрудника",
-          "title": "Сервисы сотрудника",
+          "title": "menu.employeeServices",
           "submenu": [
              {
                 "id": "reset_password",
-                "title": "Сброс пароля"
+                "title": "menu.resetPassword"
              },
              {
                 "id": "request_vacation_days",
-                "title": "Запрос количества дней отпуска"
+                "title": "menu.requestVacationDays"
              },
              {
                 "id": "request_vacation",
-                "title": "Заявка на отпуск"
+                "title": "menu.requestVacation"
              }
           ]
        },
        {
           "id": "contact_support",
-          "title": "Обращение в службу поддержки"
+          "title": "menu.contactSupport"
        },
        {
           "id": "read_barcode",
-          "title": "Распознать баркод"
+          "title": "menu.readBarcode"
        }
     ]
  }

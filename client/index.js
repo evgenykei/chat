@@ -7,13 +7,15 @@ require('../node_modules/@fortawesome/fontawesome-free/css/all.min.css');
 require('../node_modules/air-datepicker/dist/css/datepicker.min.css');
 
 
-const initApp    = require('./modules/functions').appInitialize,
+const preloading = require('./modules/preloader'),
+      initApp    = require('./modules/functions').appInitialize,
       initIo     = require('./modules/io'),
       initEvents = require('./modules/events');
 
 $(document).ready(function() {
-    initApp();
-
-    var socket = initIo();
-    initEvents(socket);
+    preloading(function(socket) {
+        initIo(socket);
+        initApp(socket);
+        initEvents(socket);
+    });
 });

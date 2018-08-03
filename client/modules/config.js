@@ -4,6 +4,7 @@ module.exports = config = {
     password: null,
     phone: null,
     code: null,
+    lang: null,
 
     messageCount: 0,
     customMode: 0,

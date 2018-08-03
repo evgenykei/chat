@@ -15,7 +15,7 @@ const existsAsync    = util.promisify(fs.exists),
 const fileDir      = config.get('Directories.upload');
       unixMode     = config.get('Files.unixFileMode');
       maxFileSize  = 10485760;
-      maxSizeError = (name) => name + " file is too big. Max size: " + (maxFileSize / 1048576).toFixed(2) + " MB.";
+      maxSizeError = (name) => name + { text: 'error.fileIsTooBig', args: [ name, (maxFileSize / 1048576).toFixed(2) ] };
 
 /**
  * Private function to find name for an uploaded file.
@@ -57,7 +57,7 @@ function initialize(socket) {
             //Check for uploading permission
             if (!socket.isAuth()) return;
             if (socket.checkAction('upload') === false) {
-                socket.sendChatData({ type: 'text', value: 'Uploading is not allowed now' });
+                socket.sendChatMessage({ text: 'error.uploadingNotAllowed' });
                 return;
             }
 
@@ -92,7 +92,7 @@ function initialize(socket) {
         }
         catch (error) {
             console.log("Uploading file error: " + error);
-            socket.sendChatData({ type: 'text', value: 'Uploading failed: ' + error });
+            socket.sendChatMessage({ text: 'error.uploadingFailed' });
         }
     });
 
@@ -107,11 +107,11 @@ function initialize(socket) {
         try {
             //parse input
             filename = socket.decrypt(filename);
-            if (!filename) return socket.sendChatMessage("Wrong file request.");
+            if (!filename) return;
 
             //check file existence
             let filePath = path.join(fileDir, filename);
-            if (!await existsAsync(filePath)) return socket.sendChatMessage("File not found.");
+            if (!await existsAsync(filePath)) return socket.sendChatMessage({ text: 'error.fileNotFound' });
 
             //configure streams
             let read = fs.createReadStream(filePath);
@@ -136,7 +136,7 @@ function initialize(socket) {
         }
         catch (err) {
             console.log("Error during user file download: " + err);
-            return socket.sendChatMessage("A server error occured during sending file.");
+            return socket.sendChatMessage({ text: 'error.uploadServerError' });
         }
     });
 }

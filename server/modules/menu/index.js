@@ -54,7 +54,7 @@ async function readMenu(menu, actions) {
                     type: 'menu',
                     value: backAction === undefined 
                         ? parsedItem.submenu 
-                        : [{ title: 'Назад', action: backAction }].concat(parsedItem.submenu)
+                        : [{ title: 'menu.back', action: backAction }].concat(parsedItem.submenu)
                 });
             }
         }
@@ -92,12 +92,12 @@ const actions = {
                 .get(url.resolve(urls.abapTransformer, urls.abapResetPasswordFunction))
                 .query({ phone_number: phone });
 
-            if (query.body.subrc === 0) result = 'Your new password: ' + query.body.newpass;
+            if (query.body.subrc === 0) result = { text: 'action.passwordResetCompleted', args: [ query.body.newpass ] };
             else throw 'bad request';
         }
         catch (err) {
             console.log('Error during password reset: ' + err);
-            result = 'An error occured during password reset.';
+            result = { text: 'action.passwordResetFailed' };
         }
 
         return { type: 'text', value: result }
@@ -120,12 +120,12 @@ const actions = {
                     .get(url.resolve(urls.abapTransformer, urls.abapDaysVacationFunction))
                     .query({ phone_number: phone, dateto: parsedDate });
     
-                if (query.body.days) result = 'Number of vacation days: ' + query.body.days;
+                if (query.body.days) result = { text: 'action.vacationDaysCompleted', args: [ query.body.days ] };
                 else throw 'bad request';
             }
             catch (err) {
                 console.log('Error during vacation days requesting: ' + err);
-                result = 'An error occured during requesting number of vacation days.';
+                result = { text: 'action.vacationDaysFailed' };
             }
 
             socket.sendChatData({ type: 'text', value: result });
@@ -170,13 +170,13 @@ const actions = {
                     decoder: { readers: barcodeReaders },
                 }, 
                 function(result) {
-                    if (result && result.codeResult) socket.sendChatMessage('Barcode result: ' + result.codeResult.code);
-                    else socket.sendChatMessage('Barcode is not detected');
+                    if (result && result.codeResult) socket.sendChatMessage({ text: 'action.barcodeCompleted', args: [ result.codeResult.code ] });
+                    else socket.sendChatMessage({ text: 'action.barcodeNotDetected' });
                 });
             }
             catch (err) {
                 console.log('Barcode read error: ' + err);
-                socket.sendChatMessage('An error occured while barcode reading.');
+                socket.sendChatMessage({ text: 'action.barcodeFailed' });
             }
         });
 

@@ -8,11 +8,13 @@ module.exports = function(socket) {
      * 
      */
 
-    $("#verifySms" ).click(function() { functions.sendVerificationCode(socket, 'sms'); });
+    $("#verifySMS" ).click(function() { functions.sendVerificationCode(socket, 'sms'); });
 
     $("#verifyCall").click(function() { functions.sendVerificationCode(socket, 'call'); });
 
     $("#join").click(function() { functions.sendJoinReq(socket, $("#code").val()); });
+
+    $("#langSelector").change(function() { functions.requestLanguage(socket, this.value); });
 
     /* 
      *

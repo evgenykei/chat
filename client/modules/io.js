@@ -1,4 +1,4 @@
-module.exports = function() {
+module.exports = function(socket) {
 
     const Utf8       = require('crypto-js/enc-utf8'),
           Base64     = require('crypto-js/enc-base64'),
@@ -9,11 +9,6 @@ module.exports = function() {
 
     const functions  = require('./functions'),
           config     = require('./config');
-
-    
-    const socket = io.connect();
-    
-    module.exports.socket = socket;
 
     /* 
      *
@@ -39,7 +34,9 @@ module.exports = function() {
      * 
      */
 
-    socket.on("verifyConfirm", function(message, type, _phone, code) {
+    socket.on("verifyConfirm", function(langObj, type, _phone, code) {
+        let message = functions.langFormat(langObj);
+
         if (type === 'sms') {
             $("#code").val('');
             $("#code").show();
@@ -53,8 +50,9 @@ module.exports = function() {
     	$("#code").val(code);
     });
     
-    socket.on("verifyFail", function(failure) {
-        functions.postConnectStatus("<li><strong>Verification request denied: " + failure + "</strong></li>");
+    socket.on("verifyFail", function(langObj) {
+        let message = functions.langFormat(langObj)
+        functions.postConnectStatus("<li><strong>" + functions.format(config.lang['status.verificationDenied'], message) + "</strong></li>");
     });
 
     /* 
@@ -83,8 +81,9 @@ module.exports = function() {
         functions.showChat();
     });
 
-    socket.on("joinFail", function (failure) {
-        functions.postConnectStatus("<li><strong>Join request denied: " + failure + "</strong></li>");
+    socket.on("joinFail", function (langObj) {
+        let message = functions.langFormat(langObj)
+        functions.postConnectStatus("<li><strong>" + functions.format(config.lang['status.joinDenied'], message) + "</strong></li>");
     });
 
     /* 
@@ -103,7 +102,7 @@ module.exports = function() {
         }
         catch (err) {
             type = 'text';
-            msg = "Unable to decrypt: " + data;
+            msg = functions.format(config.lang['status.uploadNotSupported'], data);
             from = "Server";
         }
 
@@ -111,6 +110,7 @@ module.exports = function() {
         var matchPattern = /(\b(((https?|ftp):\/\/)|magnet:)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
 
         if (type === 'text') {
+            if (from === 'Server') msg = functions.langFormat(msg);
             msg = functions.sanitizeToHTMLSafe(msg).replace(matchPattern, '<a href="$1" target="_blank">$1</a>');
             functions.postChat(type, msg, from);
         }
@@ -146,18 +146,41 @@ module.exports = function() {
         }
 
         else if (type === 'upload') {
-            functions.postChat(type, 'Server requests file(s) to upload. You have ' + msg + ' seconds.', from);
+            functions.postChat(type, functions.format(config.lang['message.uploadFile'], msg), from);
         }
 
         else if (type === 'barcode') {
-            functions.postChat(type, 'Server requests barcode photo to upload. You have ' + msg + ' seconds.', from);
+            functions.postChat(type, functions.format(config.lang['message.uploadBarcode'], msg), from);
         }
 
         else if (type === 'date') {
             functions.buildDatepicker(socket, msg.format, msg.timer);
-            functions.postChat(type, 'Enter date in \'' + msg.format + '\' format or use datepicker.', from);
+            functions.postChat(type, functions.format(config.lang['message.enterDate'], msg.format), from);
         }
         
+    });
+
+    /* 
+     *
+     * Languages operations
+     * 
+     */
+
+    socket.on('language', function(name, language) {
+        localStorage.setItem('lang', name);
+        config.lang = language;
+
+        $('#phone').attr('placeholder', language['auth.phone']);
+        $('#phoneLabel').text(language['auth.phone']);
+        $('#verifySMS').text(language['auth.verifySMS']);
+        $('#verifyCall').text(language['auth.verifyCall']);
+        $('#code').attr('placeholder', language['auth.code']);
+        $('#codeLabel').text(language['auth.code']);
+        $('#join').text(language['auth.signIn']);
+        $('#lang').text(language['auth.lang']);
+        $('#pwa-banner-title').text(language['pwa.title']);
+        $('#pwa-banner-install').text(language['pwa.install']);
+        $('#msg').attr('placeholder', language['interface.chatInput']);
     });
 
     /* 
@@ -187,7 +210,7 @@ module.exports = function() {
             miss.pipe(receive, decrypt, concat);
         }
         catch (err) {
-            functions.printChatStatus("An error occured during decrypting file.");
+            functions.printChatStatus(config.lang['error.fileDecryption']);
         }        
     })
 

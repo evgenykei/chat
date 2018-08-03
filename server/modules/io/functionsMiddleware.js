@@ -4,8 +4,7 @@ const config   = require('config'),
 const buttonActions = require('../menu');
 
 const sessionLife      = config.get('Timers.sessionLife'),
-      timeForAction    = config.get('Timers.timeForAction'),
-      configMessages   = config.get('Messages');
+      timeForAction    = config.get('Timers.timeForAction');
 
 var socket_data = {};
 var socket_intervals = {};
@@ -54,7 +53,9 @@ module.exports = function (socket, next) {
     };
 
     socket.setTimeout = function(key, time, func) {
+        socket.clearTimeout(key);
         socket_timeouts[socket.id][key] = {
+            key: key,
             elapse: Math.floor(Date.now() / 1000) + time,
             object: func ? setTimeout(func, time * 1000) : null
         };
@@ -143,7 +144,11 @@ module.exports = function (socket, next) {
 
     socket.checkChatHook = function(text) {
         let regex = socket.get('chatHook');
-        if (regex && regex.test(text) === true) socket.triggerAction('chatHook', text);
+        if (regex && regex.test(text) === true) {
+            socket.triggerAction('chatHook', text);
+            return true;
+        }
+        return false;
     },
 
     /*
@@ -208,7 +213,7 @@ module.exports = function (socket, next) {
         socket.emit('joinConfirm');
 
         //send menu and welcome message
-        socket.sendChatData({ type: 'text', value: configMessages.welcome });
+        socket.sendChatData({ type: 'text', value: { text: 'message.welcome' }});
     };
 
     next();

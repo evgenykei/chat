@@ -63,7 +63,7 @@
 <body id="main-body">
 
     <div id="pwa-banner" class="fixed-top shadow p-1 pl-3 pt-2 mb-3" style="display: none;">
-        Add SAPbot to your home screen
+        <span id="pwa-banner-title">Add SAPbot to your home screen</span>
         <button id="pwa-banner-install" class="ml-1 btn btn-secondary">Add</button>
         <label id="pwa-banner-dismiss" class="btn float-right">
             <i class="fa fa-times"></i>
@@ -76,10 +76,11 @@
                 <div class="account-wall">
                     <img class="profile-img" src="/icons/apple-touch/apple-touch-icon-120x120.png" alt="">
                     <form id="signInForm" class="form-signin">
-                        <label for="phone" class="sr-only">Phone number</label>
+                        <label id="phoneLabel" for="phone" class="sr-only">Phone number</label>
                         <input id="phone" type="tel" class="form-control" placeholder="Phone number" required autofocus>
-                        <button id="verifySms" class="btn btn-secondary btn-block">Verify via SMS</button>
+                        <button id="verifySMS" class="btn btn-secondary btn-block">Verify via SMS</button>
                         <button id="verifyCall" class="btn btn-secondary btn-block">Verify via Call</button>
+                        <label id="codeLabel" for="code" class="sr-only">Confirmation code</label>
                         <input id="code" type="number" class="form-control" placeholder="Confirmation code" style="display: none;">
                         <button id="join" class="btn btn-secondary btn-block" style="display: none;">Sign in</button>
                     </form>
@@ -87,6 +88,12 @@
                 <ul id="connect-status" class="list-unstyled"></ul>
             </div>
         </div>
+        <div class="row sticky-bottom">
+            <div class="col-lg-4 offset-lg-4">
+                <span id="lang">Language</span><span>: </span>
+                <select id="langSelector" class="selectpicker" data-width="fit"></select>
+            </div>
+        </div>  
     </div>    
 
     <div id="chat-screen" class="p-md-3" style="display: none;">

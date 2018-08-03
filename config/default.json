@@ -1,4 +1,8 @@
 {
+    "General": {
+        "defaultLocale": "English"
+    },
+
     "SMSAuth": {
         "apiKey": "4DD5D7BE-1EDE-CB36-A534-8BC34DDD994B",
         "smsText": "SAPbot verification code: %s"
@@ -47,10 +51,7 @@
 
     "Directories": {
         "files": "./server/files",
-        "upload": "./server/upload"
-    },
-
-    "Messages": {
-        "welcome": "Добро пожаловать в чат компании. Выберите один из пунктов меню."
+        "upload": "./server/upload",
+        "locale": "./locale"
     }
 }

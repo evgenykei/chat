@@ -4,15 +4,16 @@ const config         = require('config'),
 const smsAuth        = require('../smsRuAuth'),
       fileModule     = require('./fileModule'),
       menuModule     = require('../menu'),
+      langModule     = require('./langModule'),
       classifier     = require('../classifier');
 
 const callConfirmationCheckInterval = config.get('Timers.callConfirmationCheckInterval'),
       callConfirmationTimeout       = config.get('Timers.callConfirmationTimeout'),
-      verificationDelay             = config.get('Timers.verificationDelay'),
-      configMessages                = config.get('Messages');
+      verificationDelay             = config.get('Timers.verificationDelay');
 
 function onConnection(socket) {
     fileModule.initialize(socket);
+    langModule.initialize(socket);
 
     //Verify phone number
     socket.on('verifyReq', async function(phone, type) {
@@ -21,15 +22,15 @@ function onConnection(socket) {
         //Delay for verification
         let delay = socket.timeoutLeft('verificationDelay');
         if (delay !== 0)
-            return socket.emit('verifyFail', 'Too many verification requests. Try again in ' + delay + ' seconds');
+            return socket.emit('verifyFail', { text: 'status.verificationTooManyRequests', args: [ delay ] });
 
         //Stop to checking call authentication
         socket.clearInterval('refresh_call');
     
         //Validate input
         phone = validatePhone.parseNumber(phone).phone;
-        if (!phone) return socket.emit('verifyFail', 'Invalid phone number. You should enter country code, e.g \'+7..\'');
-        if (type !== 'sms' && type !== 'call') return socket.emit('verifyFail', 'Wrong verification type');
+        if (!phone) return socket.emit('verifyFail', { text: 'status.verificationInvalidPhone' });
+        if (type !== 'sms' && type !== 'call') return socket.emit('verifyFail', { text: 'status.verificationWrongType' });
         
         //Generate authentication code and save credentials
         let code = smsAuth.generateSMSCode();
@@ -39,27 +40,27 @@ function onConnection(socket) {
         //Auth using SMS
         if (type === 'sms') {            
             if (smsAuth.sendSMSCode(phone, code)) {
-                socket.emit('verifyConfirm', 'Verification sms was sent', type, phone, null);
+                socket.emit('verifyConfirm', { text: 'status.verificationSMSSent' }, type, phone, null);
                 socket.setTimeout('verificationDelay', verificationDelay);
             }
-            else socket.emit('verifyFail', 'Server error');
+            else socket.emit('verifyFail', { text: 'status.verificationServerError' });
         }
         
         //Auth using call
         else if (type === 'call') {
             let result = await smsAuth.registerCall(phone);
-            if (!result) return socket.emit('verifyFail', 'Server error');
+            if (!result) return socket.emit('verifyFail', { text: 'status.verificationServerError' });
 
             socket.setTimeout('verificationDelay', verificationDelay);
     
             socket.setInterval('refresh_call', async function() {
                 if (await smsAuth.checkCall(result.checkId) === false) return;
     
-                socket.emit('verifyConfirm', 'Your phone number was verified. You can join now', type, phone, code);
+                socket.emit('verifyConfirm', { text: 'status.verificationCallConfirmed' }, type, phone, code);
                 socket.clearInterval('refresh_call');                
             }, callConfirmationCheckInterval * 1000, callConfirmationTimeout * 1000);
     
-            socket.emit('verifyConfirm', 'Call ' + result.prettyPhone + ' to verify', type, phone, null); 
+            socket.emit('verifyConfirm', { text: 'status.verificationCall', args: [ result.prettyPhone ] }, type, phone, null); 
         }
     });
 
@@ -69,8 +70,8 @@ function onConnection(socket) {
     
         var phone = socket.get('phone');
         
-        if (!phone) return socket.emit('joinFail', 'Your phone number wasn\'t confirmed');
-        if (code !== socket.get('code')) return socket.emit('joinFail', 'Wrong confirmation code');
+        if (!phone) return socket.emit('joinFail', { text: 'status.joinPhoneNotConfirmed' });
+        if (code !== socket.get('code')) return socket.emit('joinFail', { text: 'status.joinWrongConfirmationCode' });
     
         //set socket password
         socket.auth(phone, code);
@@ -79,7 +80,7 @@ function onConnection(socket) {
         socket.emit('joinConfirm');
 
         //send menu and welcome message
-        socket.sendChatData({ type: 'text', value: configMessages.welcome });
+        socket.sendChatData({ type: 'text', value: { text: 'message.welcome' }});
     }); 
 
     //Emit chat message
@@ -87,13 +88,20 @@ function onConnection(socket) {
         if (!socket.isAuth()) return;
     
         let decrypted = socket.decrypt(msg);
-        if (decrypted) { 
+        if (decrypted) {
+            socket.sendChatData({ type: 'text', value: decrypted, from: socket.get('phone') });
+
+            //Check message hook
+            if (socket.checkChatHook(decrypted) === true) return;
+
+            //Classify message and call class menu
             let className = await classifier.classify(decrypted);
             let classMenu = menuModule.menuByClass(className);
 
-            socket.checkChatHook(decrypted);
-            socket.sendChatData({ type: 'text', value: decrypted, from: socket.get('phone') });
+            ///TEMPORARY
             socket.sendChatData({ type: 'text', value: 'Message class: ' + className })
+            ///
+            
             if (classMenu) socket.sendChatData(await classMenu(socket));
         }
     });
