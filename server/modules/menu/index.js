@@ -187,15 +187,31 @@ const actions = {
     }
 }
 
-module.exports.initialize = async() => await readMenu(menu, actions);
+module.exports = {
 
-module.exports.action = function(action) {
-    let args = action.split(';');
-    return actions[args[0]](args[1]);
-};
+    initialize: async() => await readMenu(menu, actions),
 
-module.exports.menuByClass = function(className) {
-    let foundMenu = menu.find((item) => item.class === className);
-    if (!foundMenu) return null;
-    return actions[foundMenu.action]();
-};
+    action: (action) => {
+        let args = action.split(';');
+        return actions[args[0]](args[1]);
+    },
+
+    getClassName: async (message) => {
+        try {
+            let query = await superagent
+                .get(url.resolve(urls.classifier, '/api/predict/' + encodeURIComponent(message)));
+            return query.text;
+        }
+        catch (err) {
+            console.log("Error while getting class name: " + err);
+            return 'unknown';
+        }
+    },
+
+    menuByClass: (className) => {
+        let foundMenu = menu.find((item) => item.class === className);
+        if (!foundMenu) return null;
+        return actions[foundMenu.action]();
+    }
+
+}

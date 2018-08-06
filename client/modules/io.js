@@ -115,6 +115,13 @@ module.exports = function(socket) {
             functions.postChat(type, msg, from);
         }
 
+        //////TEMPORARY
+        else if (type === 'class'){
+            msg = functions.sanitizeToHTMLSafe(msg).replace(matchPattern, '<a href="$1" target="_blank">$1</a>');
+            functions.postChat(type, msg, from);
+        }
+        /////
+
         /*
         else if (type === 'image') {
             if ($('#config-receive-imgs').is(':checked'))

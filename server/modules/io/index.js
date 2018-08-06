@@ -4,8 +4,7 @@ const config         = require('config'),
 const smsAuth        = require('../smsRuAuth'),
       fileModule     = require('./fileModule'),
       menuModule     = require('../menu'),
-      langModule     = require('./langModule'),
-      classifier     = require('../classifier');
+      langModule     = require('./langModule');
 
 const callConfirmationCheckInterval = config.get('Timers.callConfirmationCheckInterval'),
       callConfirmationTimeout       = config.get('Timers.callConfirmationTimeout'),
@@ -95,11 +94,11 @@ function onConnection(socket) {
             if (socket.checkChatHook(decrypted) === true) return;
 
             //Classify message and call class menu
-            let className = await classifier.classify(decrypted);
+            let className = await menuModule.getClassName(decrypted);
             let classMenu = menuModule.menuByClass(className);
 
             ///TEMPORARY
-            socket.sendChatData({ type: 'text', value: 'Message class: ' + className })
+            socket.sendChatData({ type: 'class', value: 'Message class: ' + className })
             ///
             
             if (classMenu) socket.sendChatData(await classMenu(socket));
@@ -129,7 +128,6 @@ function onConnection(socket) {
 
 module.exports.initialize = async function(server) {
     //Initializing related modules
-    await classifier.initialize();
     await menuModule.initialize();
 
     let io = require('socket.io').listen(server);

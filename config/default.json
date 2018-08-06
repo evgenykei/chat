@@ -11,7 +11,9 @@
     "Urls": {
         "abapTransformer": "http://192.168.1.107:8000/fmcall/",
         "abapResetPasswordFunction": "z_bot_user_change",
-        "abapDaysVacationFunction": "z_bot_daysvacation"
+        "abapDaysVacationFunction": "z_bot_daysvacation",
+
+        "classifier": "http://localhost:3002/"
     },
 
     "Timers": {
