@@ -21,7 +21,7 @@ module.exports = function(socket) {
         session = Base64.parse(session).toString(Utf8).split('.');
         config.phone = session[0];
         config.code = session[1];
-        socket.emit('restoreSession', config.phone, config.code);
+        socket.emit('restoreSession', { phone: config.phone, code: config.code });
     }
     catch(error) {
         functions.showLogin();
@@ -34,20 +34,20 @@ module.exports = function(socket) {
      * 
      */
 
-    socket.on("verifyConfirm", function(langObj, type, _phone, code) {
-        let message = functions.langFormat(langObj);
+    socket.on("verifyConfirm", function(data) {
+        let message = functions.langFormat(data.langObj);
 
-        if (type === 'sms') {
+        if (data.type === 'sms') {
             $("#code").val('');
             $("#code").show();
         }
-        else if (type === 'call') $("#code").hide();
+        else if (data.type === 'call') $("#code").hide();
     
         $("#join").show();
 
         functions.postConnectStatus("<li><strong>" + message + "</strong></li>");
-        config.phone = _phone;
-    	$("#code").val(code);
+        config.phone = data.phone;
+    	$("#code").val(data.code);
     });
     
     socket.on("verifyFail", function(langObj) {
@@ -173,7 +173,9 @@ module.exports = function(socket) {
      * 
      */
 
-    socket.on('language', function(name, language) {
+    socket.on('language', function(data) {
+        var name = data.name, language = data.language;
+
         localStorage.setItem('lang', name);
         config.lang = language;
 

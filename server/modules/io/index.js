@@ -15,7 +15,8 @@ function onConnection(socket) {
     langModule.initialize(socket);
 
     //Verify phone number
-    socket.on('verifyReq', async function(phone, type) {
+    socket.on('verifyReq', async function(data) {
+        let phone = data.phone, type = data.type;
         if (socket.isAuth()) return;
     
         //Delay for verification
@@ -23,11 +24,11 @@ function onConnection(socket) {
         if (delay !== 0)
             return socket.emit('verifyFail', { text: 'status.verificationTooManyRequests', args: [ delay ] });
 
-        //Stop to checking call authentication
+        //Stop checking call authentication
         socket.clearInterval('refresh_call');
     
         //Validate input
-        phone = validatePhone.parseNumber(phone).phone;
+        if (phone) phone = validatePhone.parseNumber(phone.toString()).phone;
         if (!phone) return socket.emit('verifyFail', { text: 'status.verificationInvalidPhone' });
         if (type !== 'sms' && type !== 'call') return socket.emit('verifyFail', { text: 'status.verificationWrongType' });
         
@@ -39,7 +40,7 @@ function onConnection(socket) {
         //Auth using SMS
         if (type === 'sms') {            
             if (smsAuth.sendSMSCode(phone, code)) {
-                socket.emit('verifyConfirm', { text: 'status.verificationSMSSent' }, type, phone, null);
+                socket.emit('verifyConfirm', { langObj: { text: 'status.verificationSMSSent' }, type: type, phone: phone, code: null });
                 socket.setTimeout('verificationDelay', verificationDelay);
             }
             else socket.emit('verifyFail', { text: 'status.verificationServerError' });
@@ -55,11 +56,11 @@ function onConnection(socket) {
             socket.setInterval('refresh_call', async function() {
                 if (await smsAuth.checkCall(result.checkId) === false) return;
     
-                socket.emit('verifyConfirm', { text: 'status.verificationCallConfirmed' }, type, phone, code);
+                socket.emit('verifyConfirm', { langObj: { text: 'status.verificationCallConfirmed' }, type: type, phone: phone, code: code });
                 socket.clearInterval('refresh_call');                
             }, callConfirmationCheckInterval * 1000, callConfirmationTimeout * 1000);
     
-            socket.emit('verifyConfirm', { text: 'status.verificationCall', args: [ result.prettyPhone ] }, type, phone, null); 
+            socket.emit('verifyConfirm', { langObj: { text: 'status.verificationCall', args: [ result.prettyPhone ] }, type: type, phone: phone, code: null }); 
         }
     });
 

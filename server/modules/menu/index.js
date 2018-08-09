@@ -36,19 +36,19 @@ async function readMenu(menu, actions) {
         while (item = treeQueue.shift()) {
             if (!item.hasOwnProperty('id')) throw 'Menu item must have an id';
 
+            let parsedItem = {
+                class: item.class,
+                action: item.id
+            }
+
             if (item.hasOwnProperty('submenu')) {
                 item.submenu.forEach((subitem) => treeQueue.push(subitem));
 
-                let parsedItem = {
-                    class: item.class,
-                    action: item.id,
-                    submenu: item.submenu.map((subitem) => ({
-                        class: subitem.class,
-                        title: subitem.title,
-                        action: subitem.id + ';' + item.id
-                    }))
-                };
-                menu.push(parsedItem);
+                parsedItem.submenu = item.submenu.map((subitem) => ({
+                    class: subitem.class,
+                    title: subitem.title,
+                    action: subitem.id + ';' + item.id
+                }));
 
                 actions[item.id] = (backAction) => async (socket) => ({
                     type: 'menu',
@@ -57,6 +57,8 @@ async function readMenu(menu, actions) {
                         : [{ title: 'menu.back', action: backAction }].concat(parsedItem.submenu)
                 });
             }
+
+            menu.push(parsedItem);
         }
     }
     catch (error) {

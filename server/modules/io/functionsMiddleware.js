@@ -163,6 +163,7 @@ module.exports = function (socket, next) {
         }
         catch (err) {
             console.log("Error during encryption: " + err);
+            console.log(err);
             return null;
         }
     };
@@ -178,6 +179,8 @@ module.exports = function (socket, next) {
     };
 
     socket.sendChatData = function(data) {
+        if (!socket.connected) return;
+
         if (!data.value) data.value = "";
         if (!data.from) data.from = 'Server';
 

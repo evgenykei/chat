@@ -15,7 +15,9 @@ module.exports = function(completed) {
         functions.requestLanguage(socket, localStorage.getItem('lang'));
     });
 
-    socket.on('language', function(name, language) {
+    socket.on('language', function(data) {
+        var name = data.name, language = data.language;
+
         localStorage.setItem('lang', name);
         $('#langSelector').val(name);
         config.lang = language;

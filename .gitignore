@@ -3,3 +3,4 @@ node_modules/
 server/files
 server/upload
 public/scripts/dist.js
+loadtesting/statistics.json

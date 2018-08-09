@@ -27,7 +27,7 @@ function initialize(socket) {
         try {
             if (!lang) lang = defaultLocale;
             let langFile = await readFileAsync(path.join(localeDir, lang + '.json'));
-            socket.emit('language', lang, JSON.parse(langFile));
+            socket.emit('language', { name: lang, language: JSON.parse(langFile) });
         }
         catch (error) {
             console.log("Error during reading locale file: " + error);

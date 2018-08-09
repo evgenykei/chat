@@ -369,7 +369,7 @@ module.exports = functions = {
         }
     
         functions.postConnectStatus("<li>" + config.lang['status.verificationSending'] + "</li>");
-        socket.emit("verifyReq", phoneNumber.toString(), type.toString());      
+        socket.emit("verifyReq", { phone: phoneNumber.toString(), type: type.toString() });      
     },
 
     sendButtonAction: function(socket, action) {
@@ -404,7 +404,7 @@ module.exports = functions = {
             (cb) => cb(null, '')
         )
 
-        ss(socket).emit('uploadFile', send, functions.encrypt({ name: file.name, size: file.size }));
+        ss(socket).emit('uploadFile', { stream: send, name: functions.encrypt(file.name), size: functions.encrypt(file.size.toString()) });
 
         miss.pipe(read, encrypt, send);
     },

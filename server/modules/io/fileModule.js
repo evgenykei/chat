@@ -52,7 +52,7 @@ function initialize(socket) {
      * Encryption chain: (Client: Buffer > HEX string > Encrypted HEX string) > (Server: Backwards)
      * 
      */
-    ss(socket).on('uploadFile', async function(receive, data) {
+    ss(socket).on('uploadFile', async function(data) {
         try {
             //Check for uploading permission
             if (!socket.isAuth()) return;
@@ -62,32 +62,46 @@ function initialize(socket) {
             }
 
             //Validate file data
-            data = JSON.parse(socket.decrypt(data));
-            if (!receive || !data.name || !data.size) throw "corrupted packet";
+            data.name = socket.decrypt(data.name);
+            data.size = parseInt(socket.decrypt(data.size));
+            if (!data.stream || !data.name || !data.size) throw "corrupted packet";
             if (data.size > maxFileSize) throw maxSizeError(data.name);
             let filename = await findFileName(data.name);
             if (filename == null) throw "cannot create file";
 
             //Configure streams
             let size = 0, decryptedChunk;
+            let receive = data.stream;
             let decrypt = miss.through(
                 (chunk, enc, cb) => {
-                    decryptedChunk = Buffer.from(socket.decrypt(chunk.toString()), 'hex');
-                    size += decryptedChunk.length;
-                    if (size > maxFileSize) throw maxSizeError(data.name);
-                    cb(null, decryptedChunk);
+                    try {
+                        decryptedChunk = Buffer.from(socket.decrypt(chunk.toString()), 'hex');
+                        size += decryptedChunk.length;
+                        if (size > maxFileSize) throw maxSizeError(data.name);
+                        cb(null, decryptedChunk);
+                    }
+                    catch (error) {
+                        console.log("Uploading file error: " + error);
+                        socket.sendChatMessage({ text: 'error.uploadingFailed' });
+                    }
                 },
                 (cb) => cb(null, '')
             );
             let write = fs.createWriteStream(path.join(fileDir, filename));
 
             //Pipe streams
-            miss.pipe(receive, decrypt, write, function(err) { 
-                if (err) {
-                    receive.end(); decrypt.end(); write.end();
-                    throw err;
+            miss.pipe(receive, decrypt, write, function(err) {
+                try {
+                    if (err) {
+                        receive.end(); decrypt.end(); write.end();
+                        throw err;
+                    }
+                    socket.triggerAction('upload', { name: filename, path: path.join(fileDir, filename) });
                 }
-                socket.triggerAction('upload', { name: filename, path: path.join(fileDir, filename) });
+                catch (error) {
+                    console.log("Uploading file error: " + error);
+                    socket.sendChatMessage({ text: 'error.uploadingFailed' });
+                }
             });
         }
         catch (error) {
