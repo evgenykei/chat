@@ -4,6 +4,7 @@ const fs            = require('fs'),
       path          = require('path'),
       config        = require('config'),      
       superagent    = require('superagent'),
+      mime          = require('mime-types'),
       quagga        = require('quagga').default,
       moment        = require('moment');
       
@@ -166,6 +167,10 @@ const actions = {
     read_barcode: (args) => async (socket) => {
         let timeForAction = socket.subscribeToAction('upload', async (file) => {
             try {
+                let type = mime.lookup(file.path);
+                if (type !== 'image/png' && type !== 'image/jpeg' && type !== 'image/gif') throw 'unsupported file format';
+
+                //TODO: FIX MULTIPLE FILES UPLOADING CRASH
                 quagga.decodeSingle({
                     src: file.path,
                     numOfWorkers: 0,

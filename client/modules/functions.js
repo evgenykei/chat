@@ -41,7 +41,7 @@ module.exports = functions = {
 
         //Registering service worker
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
+            let register = function() {
                 navigator.serviceWorker.register('/sw.js').then(function(registration) {
                     // Registration was successful
                     console.log('ServiceWorker registration successful with scope: ', registration.scope);
@@ -49,7 +49,9 @@ module.exports = functions = {
                     // registration failed :(
                     console.log('ServiceWorker registration failed: ', err);
                 });
-            });
+            };
+
+            document.readyState == 'complete' ? register() : window.addEventListener('load', register);
         }
     },
 
