@@ -19,7 +19,7 @@
     "status.verificationDenied": "Не удалось подтвердить номер телефона: {0}",    
     "status.verificationSending": "Запрос на подтверждение отправлен",
     "status.verificationTooManyRequests": "Лимит запросов на подтверждение исчерпан. Повторите попытку через {0} секунд",
-    "status.verificationInvalidPhone": "Некорректный номер телефона. Введите код страны. Например, '+7..'",
+    "status.verificationInvalidPhone": "Некорректный номер телефона",
     "status.verificationWrongType": "Неверный тип подтверждения",
     "status.verificationServerError": "Ошибка сервера",
     "status.verificationSMSSent": "СМС для подтверждение номера телефона был отправлен",

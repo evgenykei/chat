@@ -19,7 +19,7 @@
     "status.verificationDenied": "Verification request denied: {0}",
     "status.verificationSending": "Sending verification request",
     "status.verificationTooManyRequests": "Too many verification requests. Try again in {0} seconds",
-    "status.verificationInvalidPhone": "Invalid phone number. You should enter country code, e.g '+7..'",
+    "status.verificationInvalidPhone": "Invalid phone number.",
     "status.verificationWrongType": "Wrong verification type",
     "status.verificationServerError": "Server error",
     "status.verificationSMSSent": "Verification SMS was sent",

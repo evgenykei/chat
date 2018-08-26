@@ -365,7 +365,7 @@ module.exports = functions = {
     sendVerificationCode: function(socket, type) {
         var phoneNumber = $("#phone").val();
 
-        if (!phoneNumber.match(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im)){
+        if (!phoneNumber.match(/^[(]{0,1}[0-9]{3}[)]{0,1}[-\s\.]{0,1}[0-9]{3}[-\s\.]{0,1}[0-9]{4}$/)){
             functions.postConnectStatus("<li>" + config.lang['status.invalidPhone'] + "</li>");
         	return;
         }

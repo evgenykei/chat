@@ -28,6 +28,7 @@ function onConnection(socket) {
         socket.clearInterval('refresh_call');
     
         //Validate input
+        phone = "+7" + phone;
         if (phone) phone = validatePhone.parseNumber(phone.toString()).phone;
         if (!phone) return socket.emit('verifyFail', { text: 'status.verificationInvalidPhone' });
         if (type !== 'sms' && type !== 'call') return socket.emit('verifyFail', { text: 'status.verificationWrongType' });
@@ -118,7 +119,9 @@ function onConnection(socket) {
     });
 
     //Try to restore session
-    socket.on('restoreSession', socket.restoreSession);
+    socket.on('restoreSession', function(data) {
+        socket.restoreSession(data.phone, data.code);
+    });
 
     //Save session and destroy socket object
     socket.on('disconnect', function() {
