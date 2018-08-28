@@ -93,12 +93,13 @@ module.exports = function(socket) {
      */
 
     socket.on("chat", function (data) {
-        var type, msg, from;
+        var type, msg, from, target;
         try {
             var decrypted = JSON.parse(functions.decrypt(data));
             type = decrypted.type;
             msg = decrypted.value;
             from = decrypted.from;
+            target = decrypted.target;
         }
         catch (err) {
             type = 'text';
@@ -106,19 +107,14 @@ module.exports = function(socket) {
             from = "Server";
         }
 
-        //regex to match URLS
-        var matchPattern = /(\b(((https?|ftp):\/\/)|magnet:)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
-
         if (type === 'text') {
             if (from === 'Server') msg = functions.langFormat(msg);
-            msg = functions.sanitizeToHTMLSafe(msg).replace(matchPattern, '<a href="$1" target="_blank">$1</a>');
-            functions.postChat(type, msg, from);
+            functions.postChat(type, msg, from, target);
         }
 
         //////TEMPORARY
         else if (type === 'class'){
-            msg = functions.sanitizeToHTMLSafe(msg).replace(matchPattern, '<a href="$1" target="_blank">$1</a>');
-            functions.postChat(type, msg, from);
+            functions.postChat(type, msg, from, target);
         }
         /////
 
@@ -131,12 +127,13 @@ module.exports = function(socket) {
         }*/
 
         else if (type === 'menu') {
-            functions.buildMenu(msg);
+            var menu = functions.buildMenu(msg);
+            functions.postChat(type, menu.prop('outerHTML'), from, target);
         }
 
         else if (type === 'chart') {
             var canvasId = "message-" + config.messageCount + "-canvas";
-            functions.postChat(type, "<canvas id=\"" + canvasId + "\" width=\"auto\" height=\"auto\"></canvas>", from);
+            functions.postChat(type, "<canvas id=\"" + canvasId + "\"></canvas>", from, target);
             functions.buildChart(canvasId);
         }
 
@@ -149,20 +146,45 @@ module.exports = function(socket) {
                     </span> \
                     " + msg + " \
                 </div>" 
-            , from);
+            , from, target);
         }
 
         else if (type === 'upload') {
-            functions.postChat(type, functions.format(config.lang['message.uploadFile'], msg), from);
+            $('.message-type-upload').remove();
+
+            var seconds = parseInt(msg);
+            var id = functions.postChat(type, functions.format(
+                config.lang['message.uploadFile'], 
+                '<span class="upload-timer">' + seconds + '</span>',
+                '<label class="input-group-text btn btn-outline-info text-button"> \
+                    <i class="fa fa-paperclip"></i> \
+                    <input type="file" class="d-none file-select" multiple/> \
+                </label>'
+            ), from, target);
+            var time = $('#' + id).find('.upload-timer');
+
+            var interval = setInterval(function() {
+                time.text(--seconds);
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    $('#' + id).remove();
+                }
+            }, 1000);
         }
 
         else if (type === 'barcode') {
-            functions.postChat(type, functions.format(config.lang['message.uploadBarcode'], msg), from);
+            functions.postChat(type, functions.format(config.lang['message.uploadBarcode'], msg), from, target);
         }
 
         else if (type === 'date') {
+            const datepickerButton = 
+                '<span ' +
+                    'class="datepicker-show input-group-text btn btn-outline-info"' +
+                    'style="display:inline-block;padding:0.2rem 0.5rem;margin:0.2rem;">' +
+                    '<i class="fa fa-calendar"></i>' +
+                '</span>';
             functions.buildDatepicker(socket, msg.format, msg.timer);
-            functions.postChat(type, functions.format(config.lang['message.enterDate'], msg.format), from);
+            functions.postChat(type, functions.format(config.lang['message.enterDate'], msg.format, datepickerButton), from, target);
         }
         
     });

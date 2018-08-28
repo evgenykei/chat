@@ -19,11 +19,11 @@
     "Timers": {
         "___comment": "All timers are set in seconds",
 
-        "sessionLife": 30,
+        "sessionLife": 36000,
         "callConfirmationCheckInterval": 10,
         "callConfirmationTimeout": 300,
         "verificationDelay": 30,
-        "timeForAction": 60,
+        "timeForAction": 10,
         "trainingInterval": 60
     },
 

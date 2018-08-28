@@ -15,6 +15,7 @@ module.exports = function(completed) {
         functions.requestLanguage(socket, localStorage.getItem('lang'));
     });
 
+    //Set language event
     socket.on('language', function(data) {
         var name = data.name, language = data.language;
 
@@ -33,6 +34,8 @@ module.exports = function(completed) {
         $('#pwa-banner-title').text(language['pwa.title']);
         $('#pwa-banner-install').text(language['pwa.install']);
         $('#msg').attr('placeholder', language['interface.chatInput']);
+        $('#calendar-modal-header').text(language['interface.calendarModalHeader']);
+        $('#chat-header').text(language['interface.chatHeader']);
 
         socket.off('languageList');
         socket.off('language');

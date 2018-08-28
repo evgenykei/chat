@@ -15,7 +15,7 @@ const existsAsync    = util.promisify(fs.exists),
 const fileDir      = config.get('Directories.upload');
       unixMode     = config.get('Files.unixFileMode');
       maxFileSize  = 10485760;
-      maxSizeError = (name) => name + { text: 'error.fileIsTooBig', args: [ name, (maxFileSize / 1048576).toFixed(2) ] };
+      maxSizeError = (name) => ({ text: 'error.fileIsTooBig', args: [ name, (maxFileSize / 1048576).toFixed(2) ] });
 
 /**
  * Private function to find name for an uploaded file.
@@ -57,7 +57,7 @@ function initialize(socket) {
             //Check for uploading permission
             if (!socket.isAuth()) return;
             if (socket.checkAction('upload') === false) {
-                socket.sendChatMessage({ text: 'error.uploadingNotAllowed' });
+                socket.sendChatMessage({ text: 'error.uploadingNotAllowed' }, data.target);
                 return;
             }
 
@@ -81,8 +81,8 @@ function initialize(socket) {
                         cb(null, decryptedChunk);
                     }
                     catch (error) {
-                        console.log("Uploading file error: " + error);
-                        socket.sendChatMessage({ text: 'error.uploadingFailed' });
+                        console.log("Uploading file error: " + error.text || error);
+                        socket.sendChatMessage({ text: 'error.uploadingFailed', args: error }, data.target);
                     }
                 },
                 (cb) => cb(null, '')
@@ -96,17 +96,17 @@ function initialize(socket) {
                         receive.end(); decrypt.end(); write.end();
                         throw err;
                     }
-                    socket.triggerAction('upload', { name: filename, path: path.join(fileDir, filename) });
+                    socket.triggerAction('upload', { name: filename, path: path.join(fileDir, filename), target: data.target });
                 }
                 catch (error) {
-                    console.log("Uploading file error: " + error);
-                    socket.sendChatMessage({ text: 'error.uploadingFailed' });
+                    console.log("Uploading file error: " + error.text || error);
+                    socket.sendChatMessage({ text: 'error.uploadingFailed', args: error }, data.target);
                 }
             });
         }
         catch (error) {
-            console.log("Uploading file error: " + error);
-            socket.sendChatMessage({ text: 'error.uploadingFailed' });
+            console.log("Uploading file error: " + error.text || error);
+            socket.sendChatMessage({ text: 'error.uploadingFailed', args: error }, data.target);
         }
     });
 
@@ -150,7 +150,7 @@ function initialize(socket) {
         }
         catch (err) {
             console.log("Error during user file download: " + err);
-            return socket.sendChatMessage({ text: 'error.uploadServerError' });
+            return socket.sendChatMessage({ text: 'error.downloadServerError' });
         }
     });
 }

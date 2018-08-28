@@ -61,44 +61,58 @@ module.exports = functions = {
      * 
      */
 
-    postChat: function(type, message, from) {
+    postChat: function(type, message, from, target) {
         var text, classes, mentioned;
 
-        if (from !== 'Server') classes = "my-message";
-        else {
-            classes = "their-message";
-            mentioned = message.indexOf(config.phone) > -1;
-            if (type === 'chart') classes += " chart";
-            if (mentioned) classes += " mentioned";
-        }
+        //Create message body
+        var body;
+        if (type === 'menu') body = "<div class=\"message-body pl-3 pb-1 rounded\" style=\"float:none;\">" + message + "</div>";
+        else body = "<div class=\"message-body p-3 rounded border\">" + message + "</div>";
 
-        text = $("<div class=\"message " + classes + "\" id=\"message-" + config.messageCount + "\"></div>")
-        if (from === "Server") { 
-            $(
-                "<div class=\"message-avatar\"> \
-                    <span class=\"fa-stack fa-lg\"> \
-                        <i class=\"far fa-circle fa-stack-2x\"></i> \
-                        <i class=\"fa fa-robot fa-stack-1x\"></i> \
-                    </span> \
-                </div> \
-                <div class=\"message-body shadow-sm p-3 rounded\">" + message + "</div> \
-                <div class=\"empty-column\"></div>"
-            ).appendTo(text);
+        //Add avatars
+        if (from === "Server") body = 
+            "<div class=\"message-avatar\"> \
+                <span class=\"fa-stack fa-lg\"> \
+                    <i class=\"far fa-circle fa-stack-2x\"></i> \
+                    <i class=\"fa fa-robot fa-stack-1x\"></i> \
+                </span> \
+            </div> \
+            " + body + " \
+            <div class=\"empty-column\"></div>";
+        else body = 
+            "<div class=\"empty-column\"></div> \
+            " + body + " \
+            <div class=\"message-avatar\"> \
+                <span class=\"fa-stack fa-lg\"> \
+                    <i class=\"far fa-circle fa-stack-2x\"></i> \
+                    <i class=\"fa fa-user-tie fa-stack-1x\"></i> \
+                </span> \
+            </div>";
+
+        //Find or create message        
+        if (target) {
+            var id = target;
+            target = $("#" + target);
+            target.removeClassPrefix('message-type-')
+            target.addClass('message-type-' + type);
+            target.empty();
+            target.append(body);
+            return id;
         }
         else {
-            $(
-                "<div class=\"empty-column\"></div> \
-                <div class=\"message-body shadow-sm p-3 rounded\">" + message + "</div> \
-                <div class=\"message-avatar\"> \
-                    <span class=\"fa-stack fa-lg\"> \
-                        <i class=\"far fa-circle fa-stack-2x\"></i> \
-                        <i class=\"fa fa-user-tie fa-stack-1x\"></i> \
-                    </span> \
-                </div>"                
-            ).appendTo(text);            
-        } 
+            var id = "message-" + config.messageCount;
+            if (from !== 'Server') classes = "my-message";
+            else {
+                classes = "their-message message-type-" + type;
+                mentioned = message.indexOf(config.phone) > -1;
+                if (mentioned) classes += " mentioned";
+            }
 
-        this.printText(text, mentioned);
+            text = $("<div class=\"message " + classes + "\" id=\"" + id + "\"></div>")
+            text.append(body);
+            this.printText(text, mentioned);
+            return id;
+        }
     },
 
     /* 
@@ -154,9 +168,7 @@ module.exports = functions = {
      */
 
     buildMenu: function(buttons) {
-        var panel = $("#buttonPanel");
-        panel.empty();
-        $("#showMenu").addClass("active");
+        var panel = $("<div class='row'></div>");
 
         var inRow = 0;
         buttons.reduce(function(buttons) {
@@ -173,11 +185,13 @@ module.exports = functions = {
                 else if (arr.length === 2) cell.addClass("col-md-6");
                 else cell.addClass("col-md-12");
             
-                $('<button id="' + button.action + '" class="menu-button btn btn-secondary btn-block h-100">' + config.lang[button.title] + '</button>').appendTo(cell);
+                $('<button id="' + button.action + '" class="menu-button btn btn-outline-success btn-block h-100">' + config.lang[button.title] + '</button>').appendTo(cell);
                 cell.appendTo(panel);
             });
             return buttons.slice(3);
         }, buttons);
+
+        return panel;
     },
 
     /* 
@@ -186,24 +200,20 @@ module.exports = functions = {
      * 
      */
 
-    buildDatepicker: function(socket, dateFormat, timer) {
-        var panel = $("#buttonPanel");
-        panel.empty();
-        $("#showMenu").addClass("active");
-        
-        $('#buttonPanel').datepicker().data('datepicker').destroy();
-        $('#buttonPanel').datepicker({
+    buildDatepicker: function(socket, dateFormat, timer) {      
+        $('#datepicker').datepicker().data('datepicker').destroy();
+        $('#datepicker').datepicker({
             minDate: new Date(),
             dateFormat: dateFormat,
             onSelect: function(formattedDate) {
                 socket.emit('textSend', functions.encrypt(formattedDate));
-                $('#buttonPanel').empty();
-                $("#showMenu").removeClass("active");
-                $('#buttonPanel').datepicker().data('datepicker').hide();
+                $('#calendar-modal').modal('toggle')
             }
         })
-        $('.datepicker-inline').addClass("mt-1 mt-md-2 col-12");
+        $('#datepicker').css("padding", '0');
         $('.datepicker').css("width", "100%");
+        $('.datepicker').css("border", "0");
+        $('.datepicker').addClass('mb-3');
     },
 
     /* 
@@ -218,6 +228,8 @@ module.exports = functions = {
             data[i] = Math.random() * (20 - 1) + 1;
 
         var ch = new Chart($("#" + elementId)[0].getContext("2d"), {
+            responsive:true,
+            maintainAspectRatio: true,
             type: 'bar',
             data: {
                 labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
@@ -364,19 +376,14 @@ module.exports = functions = {
 
     sendVerificationCode: function(socket, type) {
         var phoneNumber = $("#phone").val();
-
-        if (!phoneNumber.match(/^[(]{0,1}[0-9]{3}[)]{0,1}[-\s\.]{0,1}[0-9]{3}[-\s\.]{0,1}[0-9]{4}$/)){
-            functions.postConnectStatus("<li>" + config.lang['status.invalidPhone'] + "</li>");
-        	return;
-        }
-    
+        
         functions.postConnectStatus("<li>" + config.lang['status.verificationSending'] + "</li>");
         socket.emit("verifyReq", { phone: phoneNumber.toString(), type: type.toString() });      
     },
 
     sendButtonAction: function(socket, action) {
         $("#buttonPanel").empty();
-        $("#showMenu").removeClass("active");
+        $(".show-menu").removeClass("active");
         if (action) socket.emit('buttonAction', functions.encrypt(action));
     },
 
@@ -395,7 +402,7 @@ module.exports = functions = {
     },
 
     sendFile: function(socket, file) {
-        functions.printChatStatus(config.lang['status.uploadingFile']);
+        let messageId = functions.postChat('text', config.lang['status.uploadingFile'], 'Server');
 
         let read = ss.createBlobReadStream(file);
         let send = ss.createStream();
@@ -406,7 +413,12 @@ module.exports = functions = {
             (cb) => cb(null, '')
         )
 
-        ss(socket).emit('uploadFile', { stream: send, name: functions.encrypt(file.name), size: functions.encrypt(file.size.toString()) });
+        ss(socket).emit('uploadFile', { 
+            stream: send, 
+            name: functions.encrypt(file.name), 
+            size: functions.encrypt(file.size.toString()),
+            target: messageId
+        });
 
         miss.pipe(read, encrypt, send);
     },
@@ -442,6 +454,11 @@ module.exports = functions = {
 
     //Helpers
     langFormat: function(obj) {
+        if (obj.text === 'message.welcome') 
+            obj.args = '<span class="show-menu input-group-text btn btn-outline-info text-button"><i class="fa fa-bars"></i></span>';
+        if (obj.args && !Array.isArray(obj.args) && typeof obj.args === 'object') {
+            obj.args = functions.langFormat(obj.args);
+        }
         return functions.format(config.lang[obj.text], obj.args);
     },
 
@@ -460,3 +477,13 @@ module.exports = functions = {
         return str;
     }
 }
+
+$.fn.removeClassPrefix = function(prefix) {
+    this.each(function(i, el) {
+        var classes = el.className.split(" ").filter(function(c) {
+            return c.lastIndexOf(prefix, 0) !== 0;
+        });
+        el.className = $.trim(classes.join(" "));
+    });
+    return this;
+};

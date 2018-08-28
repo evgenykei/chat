@@ -3,6 +3,8 @@
     "pwa.install": "Add",
 
     "interface.chatInput": "Message",
+    "interface.chatHeader": "Bot",
+    "interface.calendarModalHeader": "Pick date",
 
     "auth.phone": "Phone number",
     "auth.verifySMS": "Verify via SMS",
@@ -13,7 +15,6 @@
 
     "status.verifyPhone": "Please verify your phone number",
     "status.joinRequest": "Sending join request",
-    "status.invalidPhone": "Please enter a valid mobile phone number",
     "status.uploadingFile": "Uploading file... Please wait",
     "status.uploadNotSupported": "Warning: file uploads not supported in functions browser",
     "status.verificationDenied": "Verification request denied: {0}",
@@ -29,10 +30,10 @@
     "status.joinPhoneNotConfirmed": "Your phone number wasn't confirmed",
     "status.joinWrongConfirmationCode": "Wrong confirmation code",
     
-    "message.welcome": "Welcome to the company chat. Select one of the menu items",
-    "message.uploadFile": "Server requests file(s) to upload. You have {0} seconds",
-    "message.uploadBarcode": "Server requests barcode photo to upload. You have {0} seconds",
-    "message.enterDate": "Enter a date in '{0}' format or use the date picker",
+    "message.welcome": "Welcome to the company chat. Select one of the menu items using {0} button or enter your appeal message.",
+    "message.uploadFile": "Server requests file(s) to upload. Press {1} button or drag & drop files on the message to upload. You have {0} seconds.",
+    "message.uploadBarcode": "Server requests barcode photo to upload. Press {1} button or drag & drop files on the message to upload. You have {0} seconds. ",
+    "message.enterDate": "Enter a date in '{0}' format or use the date picker {1}",
 
     "menu.back": "Back",
     "menu.analyticalReports": "Analytical reports",
@@ -56,8 +57,8 @@
     "error.fileDecryption": "An error occured during decrypting file",
     "error.fileIsTooBig": "{0} file is too big. Max size: {1} MB",
     "error.uploadingNotAllowed": "Uploading is not allowed now",
-    "error.uploadingFailed": "Uploading failed",
+    "error.uploadingFailed": "Uploading failed: {0}.",
     "error.fileNotFound": "File not found",
-    "error.uploadServerError": "A server error occured during sending file",
+    "error.downloadServerError": "A server error occured during file downloading",
     "error.unableToDecrypt": "Unable to decrypt: {0}"
 }

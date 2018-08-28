@@ -28,7 +28,8 @@ function onConnection(socket) {
         socket.clearInterval('refresh_call');
     
         //Validate input
-        phone = "+7" + phone;
+        phone = phone.toString();
+        if (phone[0] !== '+') phone = '+' + phone;
         if (phone) phone = validatePhone.parseNumber(phone.toString()).phone;
         if (!phone) return socket.emit('verifyFail', { text: 'status.verificationInvalidPhone' });
         if (type !== 'sms' && type !== 'call') return socket.emit('verifyFail', { text: 'status.verificationWrongType' });
@@ -40,11 +41,13 @@ function onConnection(socket) {
                 
         //Auth using SMS
         if (type === 'sms') {            
-            if (smsAuth.sendSMSCode(phone, code)) {
+            /*if (smsAuth.sendSMSCode(phone, code)) {
                 socket.emit('verifyConfirm', { langObj: { text: 'status.verificationSMSSent' }, type: type, phone: phone, code: null });
                 socket.setTimeout('verificationDelay', verificationDelay);
             }
-            else socket.emit('verifyFail', { text: 'status.verificationServerError' });
+            else socket.emit('verifyFail', { text: 'status.verificationServerError' });*/
+            socket.emit('verifyConfirm', { langObj: { text: 'status.verificationSMSSent' }, type: type, phone: phone, code: code });
+            socket.setTimeout('verificationDelay', verificationDelay);
         }
         
         //Auth using call
@@ -108,14 +111,20 @@ function onConnection(socket) {
     });
 
     //Execute button action
-    socket.on('buttonAction', async function(buttonAction) {
-        if (!socket.isAuth()) return;
+    socket.on('buttonAction', async function(data) {
+        try {
+            if (!socket.isAuth()) return;
 
-        buttonAction = socket.decrypt(buttonAction);
-        if (!buttonAction || !menuModule.action(buttonAction)) return;
+            data = JSON.parse(socket.decrypt(data));
+            if (!data.action || !menuModule.action(data.action)) return;
 
-        let result = await menuModule.action(buttonAction)(socket);
-        if (result) socket.sendChatData(result);
+            let result = await menuModule.action(data.action)(socket, data.target);
+            result.target = data.target;
+            if (result) socket.sendChatData(result);
+        }
+        catch (err) {
+            console.log("Error during menu action: " + err);
+        }
     });
 
     //Try to restore session

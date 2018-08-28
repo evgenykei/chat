@@ -1,5 +1,6 @@
-require('../node_modules/bootstrap/dist/js/bootstrap.min.js');
-require('../node_modules/jquery/dist/jquery.min.js');
+$ = jQuery = require('jquery');
+require('popper.js');
+require('bootstrap');
 require('../node_modules/air-datepicker/dist/js/datepicker.min.js');
 
 require('../node_modules/bootstrap/dist/css/bootstrap.min.css');

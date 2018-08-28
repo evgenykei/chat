@@ -155,7 +155,7 @@ const actions = {
 
     //3. Обращение в службу поддержки
     contact_support: (args) => async (socket) => {
-        let timeForAction = socket.subscribeToAction('upload', (file) => socket.sendChatData({ type: 'file', value: file.name }));
+        let timeForAction = socket.subscribeToAction('upload', (file) => socket.sendChatData({ type: 'file', value: file.name, target: file.target }));
 
         return {
             type: 'upload',
@@ -177,13 +177,13 @@ const actions = {
                     decoder: { readers: barcodeReaders },
                 }, 
                 function(result) {
-                    if (result && result.codeResult) socket.sendChatMessage({ text: 'action.barcodeCompleted', args: [ result.codeResult.code ] });
-                    else socket.sendChatMessage({ text: 'action.barcodeNotDetected' });
+                    if (result && result.codeResult) socket.sendChatMessage({ text: 'action.barcodeCompleted', args: [ result.codeResult.code ] }, file.target);
+                    else socket.sendChatMessage({ text: 'action.barcodeNotDetected' }, file.target);
                 });
             }
             catch (err) {
                 console.log('Barcode read error: ' + err);
-                socket.sendChatMessage({ text: 'action.barcodeFailed' });
+                socket.sendChatMessage({ text: 'action.barcodeFailed' }, file.target);
             }
         });
 

@@ -32,36 +32,44 @@ module.exports = function(socket) {
      * 
      */
 
-    $("#showMenu" ).click(function() {
-        if ($("#buttonPanel").children().length == 0) functions.sendButtonAction(socket, 'main_menu');
+    $(document).on('click', '.show-menu', function(event) {
+        if ($("#buttonPanel").children().length == 0) functions.sendButtonAction(socket, { action: 'main_menu' });
         else functions.sendButtonAction(socket, null);
     });
 
-    $(document).on('click', '.menu-button', function(event) { functions.sendButtonAction(socket, event.target.id); });
+    $(document).on('click', '.menu-button', function(event) {
+        functions.sendButtonAction(socket, { target: $(event.target).closest(".message").attr('id'), action: event.target.id }); 
+    });
 
     $(document).on('click', '.file-download', function(event) { functions.downloadFile(socket, event.target.id); });
 
-    $("#chatForm").submit(function() { functions.sendChatMessage(socket); });
+    $(document).on('click', '.datepicker-show', function(event) {
+        $('#calendar-modal').modal('toggle'); 
+    });
 
-    $("#logout" ).click(function() { functions.logout(); });
-    
-    $('#file-select').on('change', function(filename) {
+    $(document).on('change', '.file-select', function() {
         var files = $(this).get(0).files;
         Object.keys(files).forEach(function(key) {
             functions.sendFile(socket, files[key]);
         });
-        $('#file-select').val('')
+        $('.file-select').val('');
     });
 
-    $("#main-body").on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+    $(document).on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
         e.preventDefault();
         e.stopPropagation();
-    }).on('drop', function(e) {
+    }).on('dragover', function(e) {
+        $('.message-type-upload').find('.message-body').addClass("highlight");
+    }).on('dragend dragleave dragend drop', function(e) {
+        $('.message-type-upload').find('.message-body').removeClass("highlight");
+    }).on('drop', '.message-type-upload', function(e) {
         var files = e.originalEvent.dataTransfer.files;
         Object.keys(files).forEach(function(key) {
             functions.sendFile(socket, files[key]);
         });
-    });
+    })
+
+    $("#chatForm").submit(function() { functions.sendChatMessage(socket); });
 
     /* 
      *
