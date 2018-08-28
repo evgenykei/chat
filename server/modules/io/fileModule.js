@@ -14,7 +14,7 @@ const existsAsync    = util.promisify(fs.exists),
 
 const fileDir      = config.get('Directories.upload');
       unixMode     = config.get('Files.unixFileMode');
-      maxFileSize  = 10485760;
+      maxFileSize  = config.get('Files.maxFileSize');
       maxSizeError = (name) => ({ text: 'error.fileIsTooBig', args: [ name, (maxFileSize / 1048576).toFixed(2) ] });
 
 /**

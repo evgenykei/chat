@@ -41,13 +41,11 @@ function onConnection(socket) {
                 
         //Auth using SMS
         if (type === 'sms') {            
-            /*if (smsAuth.sendSMSCode(phone, code)) {
+            if (smsAuth.sendSMSCode(phone, code)) {
                 socket.emit('verifyConfirm', { langObj: { text: 'status.verificationSMSSent' }, type: type, phone: phone, code: null });
                 socket.setTimeout('verificationDelay', verificationDelay);
             }
-            else socket.emit('verifyFail', { text: 'status.verificationServerError' });*/
-            socket.emit('verifyConfirm', { langObj: { text: 'status.verificationSMSSent' }, type: type, phone: phone, code: code });
-            socket.setTimeout('verificationDelay', verificationDelay);
+            else socket.emit('verifyFail', { text: 'status.verificationServerError' });
         }
         
         //Auth using call

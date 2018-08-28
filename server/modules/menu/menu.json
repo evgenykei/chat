@@ -39,10 +39,6 @@
        {
           "id": "contact_support",
           "title": "menu.contactSupport"
-       },
-       {
-          "id": "read_barcode",
-          "title": "menu.readBarcode"
        }
     ]
  }

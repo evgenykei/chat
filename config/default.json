@@ -23,12 +23,13 @@
         "callConfirmationCheckInterval": 10,
         "callConfirmationTimeout": 300,
         "verificationDelay": 30,
-        "timeForAction": 10,
+        "timeForAction": 60,
         "trainingInterval": 60
     },
 
     "Files": {        
-        "unixFileMode": "0644"
+        "unixFileMode": "0644",
+        "maxFileSize": "10485760"
     },
 
     "Barcode": {

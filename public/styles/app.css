@@ -213,7 +213,7 @@ btn:focus,.btn:active {
   width: 3em;
 }
 
-.message-body.message-type-chart {
+.message-type-chart .message-body {
   position: relative;
   width: 100%;
 }
