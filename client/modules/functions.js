@@ -55,6 +55,118 @@ module.exports = functions = {
         }
     },
 
+    /*
+     *
+     * Prepare chat message
+     * 
+     */
+    
+    prepareChatMessage: function (socket, data, decrypted, history = true) {
+        var type, msg, from, target, id;
+        try {
+            decrypted = decrypted || JSON.parse(functions.decrypt(data));
+            type = decrypted.type;
+            msg = decrypted.value;
+            from = decrypted.from;
+            target = decrypted.target;
+        }
+        catch (err) {
+            type = 'text';
+            msg = functions.format(config.lang['status.uploadNotSupported'], data);
+            from = "Server";
+        }
+
+        if (type === 'text') {
+            if (from === 'Server') msg = functions.langFormat(msg);
+            id = functions.postChat(type, msg, from, target);
+        }
+
+        //////TEMPORARY
+        else if (type === 'class'){
+            id = functions.postChat(type, msg, from, target);
+        }
+        /////
+
+        /*
+        else if (type === 'image') {
+            if ($('#config-receive-imgs').is(':checked'))
+                msgCore = "<img src=\"" + msg + "\"><span class=\"img-download-link\" style=\"display: none;\"><br /><a target=\"_blank\" href=\"" + msg + "\">View/Download Image</a>";
+            else 
+                msgCore = "<span class=\"text-danger\">Image blocked by configuration</span>";
+        }*/
+
+        else if (type === 'welcome') {
+            msg.args = '<span class="show-menu input-group-text btn btn-outline-info text-button"><i class="fa fa-bars"></i></span>';
+            id = functions.postChat(type, functions.langFormat(msg), from, target);
+        }
+
+        else if (type === 'menu') {
+            var menu = functions.buildMenu(msg);
+            id = functions.postChat(type, menu.prop('outerHTML'), from, target);
+        }
+
+        else if (type === 'chart') {
+            var canvasId = "message-" + config.messageCount + "-canvas";
+            id = functions.postChat(type, "<canvas id=\"" + canvasId + "\"></canvas>", from, target);
+            functions.buildChart(canvasId);
+        }
+
+        else if (type === 'file') {
+            id = functions.postChat(type, 
+                "<div id=\"" + msg + "\" class=\"btn file-download\"> \
+                    <span class=\"mr-2 fa-stack fa\"> \
+                        <i class=\"far fa-circle fa-stack-2x\"></i> \
+                        <i class=\"fa fa-arrow-down fa-stack-1x\"></i> \
+                    </span> \
+                    " + msg + " \
+                </div>" 
+            , from, target);
+        }
+
+        else if (type === 'upload') {
+            $('.message-type-upload').remove();
+
+            var seconds = parseInt(msg);
+            id = functions.postChat(type, functions.format(
+                config.lang['message.uploadFile'], 
+                '<span class="upload-timer">' + seconds + '</span>',
+                '<label class="input-group-text btn btn-outline-info text-button"> \
+                    <i class="fa fa-paperclip"></i> \
+                    <input type="file" class="d-none file-select" multiple/> \
+                </label>'
+            ), from, target);
+            var time = $('#' + id).find('.upload-timer');
+
+            var interval = setInterval(function() {
+                time.text(--seconds);
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    $('#' + id).remove();
+                }
+            }, 1000);
+        }
+
+        else if (type === 'barcode') {
+            id = functions.postChat(type, functions.format(config.lang['message.uploadBarcode'], msg), from, target);
+        }
+
+        else if (type === 'date') {
+            const datepickerButton = 
+                '<span ' +
+                    'class="datepicker-show input-group-text btn btn-outline-info"' +
+                    'style="display:inline-block;padding:0.2rem 0.5rem;margin:0.2rem;">' +
+                    '<i class="fa fa-calendar"></i>' +
+                '</span>';
+            functions.buildDatepicker(socket, msg.format, msg.timer);
+            id = functions.postChat(type, functions.format(config.lang['message.enterDate'], msg.format, datepickerButton), from, target);
+        }
+        
+        //Save message to history
+        if (history) target ? functions.updateMessageHistory(id, decrypted) : functions.addMessageHistory(id, decrypted);
+
+        return id;
+    },
+
     /* 
      *
      * Print message to chat window
@@ -96,7 +208,7 @@ module.exports = functions = {
             target.removeClassPrefix('message-type-')
             target.addClass('message-type-' + type);
             target.empty();
-            target.append(body);
+            target.append(body);       
             return id;
         }
         else {
@@ -357,6 +469,54 @@ module.exports = functions = {
             config.isMobile = true;
     },
 
+    /*
+     *
+     * Message history functions
+     * 
+     */
+
+    parseHistoryMessageType: function(type) {
+        const typeToIgnore = ['welcome', 'upload'];
+        if (typeToIgnore.indexOf(type) !== -1) return false;
+        else return true;
+    },
+
+    addMessageHistory: function (id, msg) {
+        if (!functions.parseHistoryMessageType(msg.type)) return;
+        var history = localStorage.getItem('history');
+        history = history ? JSON.parse(atob(history)) : [];
+        if (history.length >= config.historySize) history.shift();
+        msg.id = id;
+        history.push(msg);
+        localStorage.setItem('history', btoa(JSON.stringify(history)));
+    },
+
+    updateMessageHistory: function (id, msg) {
+        var history = localStorage.getItem('history');
+        if (!history) return;
+        history = JSON.parse(atob(history));
+        var foundIndex = history.findIndex(function(obj) { return obj.id === id; });
+        if (foundIndex === -1) return;
+        if (functions.parseHistoryMessageType(msg.type)) {
+            history[foundIndex].type = msg.type;
+            history[foundIndex].value = msg.value;
+            history[foundIndex].from = msg.from;
+        }
+        else history.splice(foundIndex, 1);
+        localStorage.setItem('history', btoa(JSON.stringify(history)));
+    },
+
+    printMessageHistory: function(socket) {
+        var history = localStorage.getItem('history');
+        if (!history) return;
+        history = JSON.parse(atob(history));
+
+        history.forEach(function(msg) {
+            msg.id = functions.prepareChatMessage(socket, null, msg, false);
+        });
+        localStorage.setItem('history', btoa(JSON.stringify(history)));
+    },
+
     /* 
      *
      * Event handlers
@@ -454,8 +614,6 @@ module.exports = functions = {
 
     //Helpers
     langFormat: function(obj) {
-        if (obj.text === 'message.welcome') 
-            obj.args = '<span class="show-menu input-group-text btn btn-outline-info text-button"><i class="fa fa-bars"></i></span>';
         if (obj.args && !Array.isArray(obj.args) && typeof obj.args === 'object') {
             obj.args = functions.langFormat(obj.args);
         }

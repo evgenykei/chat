@@ -215,7 +215,7 @@ module.exports = function (socket, next) {
         socket.emit('joinConfirm');
 
         //send menu and welcome message
-        socket.sendChatData({ type: 'text', value: { text: 'message.welcome' }});
+        socket.sendChatData({ type: 'welcome', value: { text: 'message.welcome' }});
     };
 
     next();

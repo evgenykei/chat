@@ -1,6 +1,8 @@
 module.exports = config = {
     appName: "SAPbot",
+    historySize: 15,
 
+    //Variables
     password: null,
     phone: null,
     code: null,
@@ -11,8 +13,6 @@ module.exports = config = {
     missedNotifications: 0,
 
     installPWAEvent: null,
-
-    notify: new Audio('sounds/notify.wav'),
 
     isMobile: false
 }

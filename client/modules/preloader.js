@@ -2,6 +2,7 @@ const functions  = require('./functions'),
       config     = require('./config');
 
 module.exports = function(completed) {
+    //Connect to server
     const socket = io.connect();
 
     //Load languages        
@@ -36,6 +37,9 @@ module.exports = function(completed) {
         $('#msg').attr('placeholder', language['interface.chatInput']);
         $('#calendar-modal-header').text(language['interface.calendarModalHeader']);
         $('#chat-header').text(language['interface.chatHeader']);
+
+        //Load messages from history
+        functions.printMessageHistory();
 
         socket.off('languageList');
         socket.off('language');
