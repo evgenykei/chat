@@ -45,6 +45,7 @@
     "menu.requestVacation": "Заявка на отпуск",
     "menu.contactSupport": "Обращение в службу поддержки",
     "menu.readBarcode": "Распознать баркод",
+    "menu.presentation": "Получить презентацию",
 
     "action.passwordResetCompleted": "Ваш новый пароль: {0}",
     "action.passwordResetFailed": "Возникла ошибка при сбросе пароля",

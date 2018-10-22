@@ -39,6 +39,10 @@
        {
           "id": "contact_support",
           "title": "menu.contactSupport"
+       },
+       {
+           "id": "presentation",
+           "title": "menu.presentation"
        }
     ]
  }

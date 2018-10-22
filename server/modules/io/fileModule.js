@@ -12,10 +12,16 @@ const existsAsync    = util.promisify(fs.exists),
       openFileAsync  = util.promisify(fs.open),
       closeFileAsync = util.promisify(fs.close);
 
-const fileDir      = config.get('Directories.upload');
-      unixMode     = config.get('Files.unixFileMode');
-      maxFileSize  = config.get('Files.maxFileSize');
+const filesDir     = config.get('Directories.files'),
+      uploadDir    = config.get('Directories.upload'),
+      unixMode     = config.get('Files.unixFileMode'),
+      maxFileSize  = config.get('Files.maxFileSize'),
       maxSizeError = (name) => ({ text: 'error.fileIsTooBig', args: [ name, (maxFileSize / 1048576).toFixed(2) ] });
+      
+const dirsAliases = {
+    files: filesDir,
+    upload: uploadDir
+};
 
 /**
  * Private function to find name for an uploaded file.
@@ -30,10 +36,10 @@ async function findFileName(name) {
             number  = 1;
 
         let originalName = path.basename(name, extname);
-        while (await existsAsync(path.join(fileDir, name)) === true)
+        while (await existsAsync(path.join(uploadDir, name)) === true)
             name = originalName + '-' + number++ + extname;
         
-        let fd = await openFileAsync(path.join(fileDir, name), 'w', parseInt(unixMode, 8));
+        let fd = await openFileAsync(path.join(uploadDir, name), 'w', parseInt(unixMode, 8));
         await closeFileAsync(fd);
 
         return name;
@@ -87,7 +93,7 @@ function initialize(socket) {
                 },
                 (cb) => cb(null, '')
             );
-            let write = fs.createWriteStream(path.join(fileDir, filename));
+            let write = fs.createWriteStream(path.join(uploadDir, filename));
 
             //Pipe streams
             miss.pipe(receive, decrypt, write, function(err) {
@@ -96,7 +102,7 @@ function initialize(socket) {
                         receive.end(); decrypt.end(); write.end();
                         throw err;
                     }
-                    socket.triggerAction('upload', { name: filename, path: path.join(fileDir, filename), target: data.target });
+                    socket.triggerAction('upload', { name: `upload.${filename}`, path: path.join(uploadDir, filename), target: data.target });
                 }
                 catch (error) {
                     console.log("Uploading file error: " + error.text || error);
@@ -115,16 +121,21 @@ function initialize(socket) {
      * Downloading
      * 
      */
-
-
     socket.on('downloadFile', async function(filename) {
         try {
             //parse input
             filename = socket.decrypt(filename);
-            if (!filename) return;
+            if (!filename) return socket.sendChatMessage({ text: 'error.fileNotFound' });;
+            
+            //determine file directory
+            let dir = filename.substr(0, filename.indexOf('.'));
+            filename = filename.slice(dir.length + 1);
+
+            //validate dir
+            if (!dirsAliases[dir]) return socket.sendChatMessage({ text: 'error.fileNotFound' });
 
             //check file existence
-            let filePath = path.join(fileDir, filename);
+            let filePath = path.join(dirsAliases[dir], filename);
             if (!await existsAsync(filePath)) return socket.sendChatMessage({ text: 'error.fileNotFound' });
 
             //configure streams
@@ -149,7 +160,8 @@ function initialize(socket) {
             miss.pipe(read, encrypt, send);
         }
         catch (err) {
-            console.log("Error during user file download: " + err);
+            console.log(err)
+            console.error("Error during user file download: " + err);
             return socket.sendChatMessage({ text: 'error.downloadServerError' });
         }
     });

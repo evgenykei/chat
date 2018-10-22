@@ -163,7 +163,20 @@ const actions = {
         };
     },
 
-    //4. Распознать баркод
+    //4. Получить презентацию
+    presentation: (args) => async (socket) => {
+        let files = {
+            'Русский': 'chat_bot_info.pptx',
+            'English': 'chat_bot_info_en.pptx'
+        }
+
+        return {
+            type: 'file',
+            value: `files.${files[socket.get('lang')]}`
+        };
+    },
+
+    //5. Распознать баркод (NOT USED)
     read_barcode: (args) => async (socket) => {
         let timeForAction = socket.subscribeToAction('upload', async (file) => {
             try {

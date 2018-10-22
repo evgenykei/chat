@@ -45,6 +45,7 @@
     "menu.requestVacation": "Request vacation",
     "menu.contactSupport": "Contact support",
     "menu.readBarcode": "Read barcode",
+    "menu.presentation": "Receive presentation",
 
     "action.passwordResetCompleted": "Your new password: {0}",
     "action.passwordResetFailed": "An error occured during password reset",

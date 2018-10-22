@@ -118,7 +118,7 @@ module.exports = functions = {
                         <i class=\"far fa-circle fa-stack-2x\"></i> \
                         <i class=\"fa fa-arrow-down fa-stack-1x\"></i> \
                     </span> \
-                    " + msg + " \
+                    " + msg.slice(msg.indexOf('.') + 1) + " \
                 </div>" 
             , from, target);
         }
